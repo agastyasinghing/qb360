@@ -1,0 +1,2071 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QuickBite Search — Design Case Study</title>
+<meta name="description" content="QuickBite: a design case study about turning ingredients into meals. UX research, prototyping, evaluation, and design rationale." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+/* ============================================================
+   QuickBite Design Portfolio
+   Single-file HTML/CSS/JS — designed to match the QuickBite app
+   color system: cream + leaf-green + warm orange.
+   Signature concept: portfolio styled as a search engine.
+   ============================================================ */
+
+:root {
+  --bg: #FAF7F2;
+  --bg-soft: #F4EFE4;
+  --card: #FFFFFF;
+  --ink: #1A1A1A;
+  --ink-soft: #3A3A3A;
+  --muted: #6B6B6B;
+  --line: #E8E2D5;
+  --line-strong: #D8CFB9;
+
+  --green: #4A7C59;
+  --green-deep: #2F5A3E;
+  --green-soft: #EAF0E8;
+  --green-tint: #F2F6EF;
+
+  --orange: #C97B2E;
+  --orange-soft: #F8E6D3;
+  --red: #B0463C;
+
+  --link: #2E5A8C;
+
+  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-pill: 999px;
+
+  --shadow-1: 0 1px 2px rgba(20, 18, 12, .04), 0 1px 3px rgba(20, 18, 12, .03);
+  --shadow-2: 0 4px 14px rgba(20, 18, 12, .06), 0 1px 3px rgba(20, 18, 12, .04);
+  --shadow-3: 0 18px 40px rgba(20, 18, 12, .09), 0 4px 10px rgba(20, 18, 12, .04);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img { max-width: 100%; display: block; }
+a { color: var(--green-deep); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+::selection { background: var(--green-soft); color: var(--green-deep); }
+
+/* ===== Sticky top nav (search-tab style) ===== */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(250, 247, 242, 0.92);
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.nav-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.brand .dot {
+  width: 10px; height: 10px;
+  background: var(--green);
+  border-radius: 50%;
+  display: inline-block;
+}
+.brand em { font-style: normal; color: var(--green); }
+
+.search-tabs {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+}
+.search-tabs a {
+  display: inline-block;
+  padding: 8px 14px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--muted);
+  border-radius: var(--r-pill);
+  letter-spacing: 0.005em;
+  transition: color .15s, background .15s;
+}
+.search-tabs a:hover { color: var(--green-deep); background: var(--green-tint); text-decoration: none; }
+.search-tabs a.active { color: var(--green-deep); background: var(--green-soft); }
+
+/* ===== Hero ===== */
+.hero {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 90px 28px 40px;
+  text-align: center;
+}
+.hero .wordmark {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 8vw, 92px);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+  margin: 0 0 18px;
+}
+.hero .wordmark .accent { color: var(--green); font-style: italic; font-weight: 500; }
+.hero p.lede {
+  font-size: 17px;
+  color: var(--muted);
+  max-width: 560px;
+  margin: 0 auto 36px;
+}
+
+.search-bar {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  padding: 6px 6px 6px 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 620px;
+  margin: 0 auto;
+  box-shadow: var(--shadow-2);
+  transition: box-shadow .2s, border-color .2s;
+}
+.search-bar:focus-within {
+  border-color: var(--green);
+  box-shadow: var(--shadow-3);
+}
+.search-bar svg { flex: 0 0 auto; color: var(--muted); }
+.search-bar input {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 15.5px;
+  padding: 12px 0;
+  color: var(--ink);
+  outline: none;
+}
+.search-bar input::placeholder { color: #999; }
+.search-bar .go {
+  background: var(--green);
+  color: #fff;
+  border: 0;
+  border-radius: var(--r-pill);
+  padding: 10px 18px;
+  font: inherit;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.search-bar .go:hover { background: var(--green-deep); }
+
+.search-results-pop {
+  max-width: 620px;
+  margin: 8px auto 0;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-3);
+  padding: 8px;
+  display: none;
+  text-align: left;
+}
+.search-results-pop.open { display: block; }
+.search-results-pop .pop-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.search-results-pop .pop-item:hover { background: var(--green-tint); }
+.search-results-pop .pop-item .crumb { color: var(--muted); font-size: 12px; }
+.search-results-pop .pop-empty { padding: 14px; color: var(--muted); font-size: 14px; text-align: center; }
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 22px auto 0;
+  max-width: 720px;
+}
+.chip {
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 14px;
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  transition: all .15s;
+}
+.chip:hover { border-color: var(--green); color: var(--green-deep); background: var(--green-tint); }
+
+.suggested {
+  margin: 56px auto 0;
+  max-width: 620px;
+  text-align: left;
+}
+.suggested h3 {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+.suggested ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 2px; }
+.suggested li a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 15px;
+  color: var(--ink-soft);
+  transition: background .15s;
+}
+.suggested li a:hover { background: var(--bg-soft); text-decoration: none; }
+.suggested li a::before {
+  content: "";
+  width: 16px; height: 16px;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239B9B9B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='7'/><path d='m20 20-3.5-3.5'/></svg>") center/contain no-repeat;
+  flex: 0 0 auto;
+}
+
+/* ===== Featured snippet / overview card ===== */
+.snippet-shell { max-width: 880px; margin: 60px auto 0; padding: 0 28px; }
+.snippet {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 28px 32px 26px;
+  box-shadow: var(--shadow-2);
+}
+.snippet .featured-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--green);
+  background: var(--green-soft);
+  padding: 5px 10px;
+  border-radius: var(--r-pill);
+  margin-bottom: 14px;
+}
+.snippet .crumb-url {
+  color: var(--green-deep);
+  font-size: 13px;
+  margin-bottom: 6px;
+  font-family: var(--font-mono);
+}
+.snippet h2 {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  margin: 4px 0 12px;
+}
+.snippet p { color: var(--ink-soft); margin: 0 0 22px; }
+
+.snippet-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+.snippet-meta dl { margin: 0; }
+.snippet-meta dt {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.snippet-meta dd { margin: 0; font-size: 14px; color: var(--ink); line-height: 1.45; }
+
+/* ===== Section shell ===== */
+.section {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 90px 28px 0;
+}
+.section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--green);
+  letter-spacing: 0.08em;
+}
+.section-head h2 {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0;
+  flex: 1 1 60%;
+}
+.section-head .sub {
+  flex: 1 1 100%;
+  font-size: 15px;
+  color: var(--muted);
+  margin-top: -8px;
+}
+
+.lead-para {
+  font-size: 17px;
+  color: var(--ink-soft);
+  max-width: 720px;
+  margin: 0 0 28px;
+  line-height: 1.65;
+}
+
+/* ===== Generic cards ===== */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 22px 24px;
+  box-shadow: var(--shadow-1);
+}
+.card.muted { background: var(--bg-soft); border-color: var(--line-strong); box-shadow: none; }
+.card h3 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 8px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.card p { margin: 0 0 0; color: var(--ink-soft); }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.grid-2-flex { display: grid; grid-template-columns: 1.2fr 1fr; gap: 28px; align-items: start; }
+
+@media (max-width: 760px) {
+  .grid-2, .grid-3, .grid-2-flex { grid-template-columns: 1fr; }
+  .hero { padding-top: 60px; }
+  .snippet { padding: 22px 20px; }
+  .section { padding: 70px 20px 0; }
+  .nav-inner { padding: 12px 18px; gap: 14px; }
+  .search-tabs { gap: 0; }
+  .search-tabs a { padding: 6px 10px; font-size: 13px; }
+}
+
+/* ===== Result card (used in many sections) ===== */
+.result {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 22px 26px;
+  box-shadow: var(--shadow-1);
+}
+.result .result-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.result .result-meta .badge {
+  background: var(--green-soft);
+  color: var(--green-deep);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+}
+.result .result-meta .url {
+  font-family: var(--font-mono);
+  color: var(--green-deep);
+  font-size: 12.5px;
+}
+.result h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 22px;
+  margin: 0 0 6px;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+.result .snippet-text { color: var(--ink-soft); font-size: 15px; line-height: 1.6; margin: 0; }
+.result .ev {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+  font-size: 13.5px;
+  color: var(--muted);
+}
+.result .ev strong { color: var(--ink); font-weight: 600; }
+
+/* ===== Eyebrow / labels ===== */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--green);
+}
+
+/* ===== Problem narrowing funnel ===== */
+.narrow {
+  display: grid;
+  gap: 14px;
+  margin: 30px 0;
+}
+.narrow .step {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 22px;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 18px 22px;
+  position: relative;
+}
+.narrow .step .num {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 38px;
+  font-weight: 500;
+  color: var(--green);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.narrow .step h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
+}
+.narrow .step p { margin: 0; font-size: 14px; color: var(--muted); }
+.narrow .step:nth-child(1) { margin-left: 0; }
+.narrow .step:nth-child(2) { margin-left: 3%; }
+.narrow .step:nth-child(3) { margin-left: 6%; }
+.narrow .step:nth-child(4) { margin-left: 9%; }
+.narrow .step:nth-child(5) { margin-left: 12%; background: var(--green-soft); border-color: var(--green); }
+.narrow .step:nth-child(5) .num { color: var(--green-deep); }
+
+@media (max-width: 760px) {
+  .narrow .step { margin-left: 0 !important; grid-template-columns: 60px 1fr; gap: 14px; padding: 14px 16px; }
+  .narrow .step .num { font-size: 28px; }
+}
+
+/* ===== Design Question callout ===== */
+.dq {
+  background: linear-gradient(180deg, var(--green-soft), #DDE7D9);
+  border: 1px solid var(--green);
+  border-radius: var(--r-lg);
+  padding: 36px 40px;
+  margin: 40px 0;
+  position: relative;
+  overflow: hidden;
+}
+.dq::before {
+  content: "“";
+  position: absolute;
+  font-family: var(--font-display);
+  font-size: 220px;
+  line-height: 1;
+  color: var(--green);
+  opacity: 0.15;
+  top: -30px;
+  left: 16px;
+}
+.dq .dq-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--green-deep);
+  margin-bottom: 14px;
+  display: inline-block;
+}
+.dq blockquote {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 2.6vw, 26px);
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: -0.01em;
+  position: relative;
+  z-index: 1;
+}
+.dq blockquote em { color: var(--green-deep); font-style: italic; }
+
+/* ===== Quote cards (user research) ===== */
+.quote-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin: 30px 0;
+}
+.quote {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 22px;
+  box-shadow: var(--shadow-1);
+}
+.quote .who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.quote .who .avatar {
+  width: 32px; height: 32px;
+  background: var(--green-soft);
+  color: var(--green-deep);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 13px;
+}
+.quote .who .name { font-weight: 600; font-size: 14px; }
+.quote .who .role { color: var(--muted); font-size: 12px; }
+.quote p {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0 0 12px;
+  color: var(--ink);
+}
+.quote .insight {
+  font-size: 12.5px;
+  color: var(--green-deep);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+}
+@media (max-width: 760px) { .quote-grid { grid-template-columns: 1fr; } }
+
+/* ===== Affinity clusters ===== */
+.affinity {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin: 28px 0;
+}
+.cluster {
+  background: var(--card);
+  border-radius: var(--r-md);
+  padding: 20px;
+  border: 1px solid var(--line);
+}
+.cluster h4 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cluster h4::before {
+  content: "";
+  width: 10px; height: 10px;
+  background: var(--green);
+  border-radius: 50%;
+  display: inline-block;
+}
+.cluster ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.cluster li {
+  background: var(--green-tint);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  line-height: 1.45;
+  border-left: 3px solid var(--green);
+}
+.cluster:nth-child(2) h4::before, .cluster:nth-child(2) li { border-left-color: var(--orange); }
+.cluster:nth-child(2) h4::before { background: var(--orange); }
+.cluster:nth-child(2) li { background: var(--orange-soft); }
+.cluster:nth-child(3) h4::before, .cluster:nth-child(3) li { border-left-color: var(--link); }
+.cluster:nth-child(3) h4::before { background: var(--link); }
+.cluster:nth-child(3) li { background: #E6EEF7; }
+@media (max-width: 760px) { .affinity { grid-template-columns: 1fr; } }
+
+/* ===== Competitive analysis ===== */
+.compete {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin: 28px 0;
+}
+.comp-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 22px;
+}
+.comp-card h4 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
+}
+.comp-card .tag {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 14px;
+  display: block;
+}
+.comp-card .strength,
+.comp-card .weakness { font-size: 13.5px; line-height: 1.55; margin: 10px 0; }
+.comp-card .strength::before {
+  content: "+";
+  display: inline-block;
+  width: 18px;
+  color: var(--green);
+  font-weight: 700;
+}
+.comp-card .weakness::before {
+  content: "−";
+  display: inline-block;
+  width: 18px;
+  color: var(--red);
+  font-weight: 700;
+}
+@media (max-width: 760px) { .compete { grid-template-columns: 1fr; } }
+
+.opportunity {
+  background: var(--card);
+  border: 2px solid var(--green);
+  border-radius: var(--r-md);
+  padding: 24px 28px;
+  margin: 28px 0 0;
+  position: relative;
+}
+.opportunity .label {
+  position: absolute;
+  top: -12px;
+  left: 22px;
+  background: var(--green);
+  color: #fff;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  border-radius: var(--r-pill);
+}
+.opportunity p {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.45;
+  margin: 6px 0 0;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+
+/* ===== Persona / stakeholder ===== */
+.stake {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin: 28px 0;
+}
+.stake-col {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 22px;
+}
+.stake-col h4 { font-family: var(--font-display); font-size: 20px; margin: 0 0 14px; font-weight: 600; }
+.stake-col ul { padding-left: 0; list-style: none; margin: 0; display: grid; gap: 8px; }
+.stake-col li {
+  font-size: 14px;
+  padding: 10px 14px;
+  background: var(--bg-soft);
+  border-radius: 10px;
+  border-left: 3px solid var(--green);
+}
+.stake-col.indirect li { border-left-color: var(--orange); }
+
+.personas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 22px;
+}
+.persona {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 22px;
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 18px;
+}
+.persona .photo {
+  width: 56px; height: 56px;
+  background: var(--green-soft);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--green-deep);
+}
+.persona h4 {
+  font-family: var(--font-display);
+  margin: 0 0 2px;
+  font-size: 18px;
+  font-weight: 600;
+}
+.persona .role { font-size: 12.5px; color: var(--muted); margin-bottom: 10px; }
+.persona p { font-size: 14px; margin: 0; color: var(--ink-soft); line-height: 1.55; }
+@media (max-width: 760px) { .stake, .personas { grid-template-columns: 1fr; } }
+
+/* ===== Feature priority ===== */
+.priority-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 26px 0;
+}
+.tier {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 20px;
+}
+.tier .tier-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.tier .tier-head h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 17px;
+  margin: 0;
+}
+.tier .tier-head .count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--green-soft);
+  color: var(--green-deep);
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+}
+.tier ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.tier li {
+  font-size: 13.5px;
+  padding: 8px 10px;
+  background: var(--bg-soft);
+  border-radius: 8px;
+  color: var(--ink-soft);
+}
+.tier.must li { background: var(--green-tint); border-left: 3px solid var(--green); }
+.tier.should .count { background: var(--orange-soft); color: var(--orange); }
+.tier.should li { background: var(--orange-soft); border-left: 3px solid var(--orange); }
+.tier.nice .count { background: #ECEAFD; color: #5944A4; }
+.tier.nice li { background: #ECEAFD; border-left: 3px solid #7E6BCB; }
+@media (max-width: 760px) { .priority-grid { grid-template-columns: 1fr; } }
+
+/* ===== Low-fi sketch (inline svg) ===== */
+.lofi {
+  background: #FFFCF5;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-md);
+  padding: 28px;
+  margin: 28px 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+}
+.lofi figure { margin: 0; text-align: center; }
+.lofi svg {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  background: #fff;
+  border: 1.5px solid #2A2A2A;
+}
+.lofi figcaption {
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ===== Final prototype gallery ===== */
+.flow {
+  margin: 36px 0 0;
+}
+.flow-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.flow-head .flow-num {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 28px;
+  color: var(--green);
+  letter-spacing: -0.02em;
+}
+.flow-head h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 24px;
+  margin: 0;
+  letter-spacing: -0.01em;
+  flex: 1;
+}
+.flow > p { color: var(--ink-soft); font-size: 15px; margin: 0 0 20px; max-width: 720px; }
+
+.screens {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 18px;
+}
+.screen {
+  background: var(--card);
+  border-radius: var(--r-md);
+  padding: 14px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-1);
+}
+.screen img {
+  border-radius: 8px;
+  background: var(--bg-soft);
+  width: 100%;
+  height: auto;
+}
+.screen figcaption {
+  margin-top: 10px;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.screen figcaption strong { color: var(--ink); font-weight: 600; display: block; margin-bottom: 2px; }
+
+/* ===== Evaluation findings split ===== */
+.findings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin: 28px 0;
+}
+.finding-col {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 22px 24px;
+}
+.finding-col h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 19px;
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.finding-col.worked h4::before {
+  content: "✓";
+  width: 22px; height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 12px;
+}
+.finding-col.improve h4::before {
+  content: "!";
+  width: 22px; height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--orange);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 13px;
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+.finding-col ul { padding: 0; list-style: none; margin: 0; display: grid; gap: 10px; }
+.finding-col li {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  padding-left: 18px;
+  position: relative;
+}
+.finding-col li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: var(--green);
+}
+.finding-col.improve li::before { color: var(--orange); }
+@media (max-width: 760px) { .findings { grid-template-columns: 1fr; } }
+
+/* ===== Before / after changes ===== */
+.changes {
+  background: var(--card);
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  padding: 26px 28px;
+  margin-top: 28px;
+}
+.changes h4 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 16px;
+}
+.changes table { width: 100%; border-collapse: collapse; }
+.changes th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.changes td {
+  padding: 14px 12px;
+  font-size: 14px;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  line-height: 1.5;
+}
+.changes tr:last-child td { border-bottom: 0; }
+.changes td:first-child {
+  width: 38%;
+  color: var(--ink);
+  font-weight: 500;
+}
+.changes td:first-child::before {
+  content: "→";
+  margin-right: 8px;
+  color: var(--green);
+  font-weight: 700;
+}
+
+/* ===== Rationale decision cards ===== */
+.decisions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-top: 28px;
+}
+.decision {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 24px 26px;
+  position: relative;
+}
+.decision .num {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 42px;
+  font-weight: 500;
+  color: var(--green);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.decision h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  margin: 6px 0 12px;
+  letter-spacing: -0.01em;
+}
+.decision .why, .decision .result {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin: 8px 0;
+}
+.decision .why strong, .decision .result strong {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--green-deep);
+  display: block;
+  margin-bottom: 4px;
+}
+.decision:last-child { grid-column: 1 / -1; }
+@media (max-width: 760px) { .decisions { grid-template-columns: 1fr; } }
+
+/* ===== Reflection ===== */
+.reflection {
+  background: linear-gradient(180deg, var(--bg-soft), var(--bg));
+  border-radius: var(--r-lg);
+  padding: 40px 44px;
+  margin-top: 28px;
+  border: 1px solid var(--line);
+}
+.reflection .insight-q {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--ink);
+  margin: 0 0 28px;
+  max-width: 720px;
+  letter-spacing: -0.01em;
+}
+.reflection .insight-q::before { content: "“"; color: var(--green); }
+.reflection .insight-q::after { content: "”"; color: var(--green); }
+.reflection .reflect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 22px;
+}
+.reflection .reflect-item h5 {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--green);
+  margin: 0 0 8px;
+}
+.reflection .reflect-item p { margin: 0; font-size: 14.5px; color: var(--ink-soft); line-height: 1.6; }
+@media (max-width: 760px) { .reflection { padding: 28px 22px; } }
+
+/* ===== Limitations / Future ===== */
+.split-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 28px;
+}
+.split-list .pane {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 24px;
+}
+.split-list .pane h4 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+.split-list .pane ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.split-list .pane li {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  padding-left: 22px;
+  position: relative;
+}
+.split-list .pane li::before {
+  content: "";
+  width: 6px; height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  position: absolute;
+  left: 6px; top: 9px;
+}
+.split-list .pane.limit li::before { background: var(--orange); }
+@media (max-width: 760px) { .split-list { grid-template-columns: 1fr; } }
+
+/* ===== Figure wrapper for figma image ===== */
+.fig {
+  margin: 24px 0;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+}
+.fig img { background: #fff; }
+.fig figcaption {
+  padding: 12px 20px 16px;
+  font-size: 13px;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  background: var(--bg-soft);
+}
+.fig figcaption strong { color: var(--ink); font-weight: 600; }
+
+/* ===== References ===== */
+.refs {
+  display: grid;
+  gap: 6px;
+  margin-top: 28px;
+  background: var(--card);
+  border-radius: var(--r-md);
+  padding: 26px 28px;
+  border: 1px solid var(--line);
+}
+.refs li {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--line);
+}
+.refs li:last-child { border-bottom: 0; }
+.refs ol { padding-left: 18px; margin: 0; display: contents; }
+
+/* ===== Footer ===== */
+footer {
+  margin-top: 120px;
+  padding: 50px 28px 60px;
+  background: var(--bg-soft);
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+footer .foot-brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  margin-bottom: 10px;
+  letter-spacing: -0.01em;
+}
+footer .foot-brand em { color: var(--green); font-style: italic; font-weight: 500; }
+footer p {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 4px 0;
+  max-width: 540px;
+  margin-left: auto;
+  margin-right: auto;
+}
+footer .foot-crumb {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--green-deep);
+  margin-top: 16px;
+}
+</style>
+</head>
+<body>
+
+<!-- ================ NAV ================ -->
+<nav class="nav" aria-label="Primary">
+  <div class="nav-inner">
+    <a class="brand" href="#top"><span class="dot"></span> <span>Quick<em>Bite</em></span></a>
+    <ul class="search-tabs" role="tablist">
+      <li><a href="#overview" class="tab" data-sec="overview">All</a></li>
+      <li><a href="#problem" class="tab" data-sec="problem">Problem</a></li>
+      <li><a href="#research" class="tab" data-sec="research">Research</a></li>
+      <li><a href="#design" class="tab" data-sec="design">Design</a></li>
+      <li><a href="#evaluation" class="tab" data-sec="evaluation">Evaluation</a></li>
+      <li><a href="#rationale" class="tab" data-sec="rationale">Rationale</a></li>
+      <li><a href="#reflection" class="tab" data-sec="reflection">Reflection</a></li>
+      <li><a href="#future" class="tab" data-sec="future">Future</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ================ HERO ================ -->
+<header id="top" class="hero">
+  <h1 class="wordmark">Quick<span class="accent">Bite</span> Search.</h1>
+  <p class="lede">Explore the design process behind a mobile app that turns ingredients into meals.</p>
+
+  <div class="search-bar" role="search">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="searchInput" type="search" placeholder="Search problem, research, prototype, evaluation, reflection…" autocomplete="off" />
+    <button class="go" id="searchGo">Search</button>
+  </div>
+  <div class="search-results-pop" id="searchPop"></div>
+
+  <div class="chips">
+    <button class="chip" data-jump="problem">Problem</button>
+    <button class="chip" data-jump="research">User Research</button>
+    <button class="chip" data-jump="competitive">Competitive Analysis</button>
+    <button class="chip" data-jump="rationale">Design Rationale</button>
+    <button class="chip" data-jump="lofi">Low-Fi Prototype</button>
+    <button class="chip" data-jump="design">Final Prototype</button>
+    <button class="chip" data-jump="evaluation">Usability Testing</button>
+    <button class="chip" data-jump="reflection">Reflection</button>
+    <button class="chip" data-jump="future">Future Plan</button>
+  </div>
+
+  <div class="suggested">
+    <h3>Suggested searches</h3>
+    <ul>
+      <li><a href="#problem">Why did we build QuickBite?</a></li>
+      <li><a href="#problem">What problem does QuickBite solve?</a></li>
+      <li><a href="#research">How did user research shape the design?</a></li>
+      <li><a href="#rationale">Why does the app start with ingredients?</a></li>
+      <li><a href="#evaluation">What did usability testing reveal?</a></li>
+      <li><a href="#future">What would we improve next?</a></li>
+    </ul>
+  </div>
+</header>
+
+<!-- ================ TOP RESULT / OVERVIEW ================ -->
+<div class="snippet-shell" id="overview">
+  <div class="snippet">
+    <span class="featured-tag">Featured snippet · Case study</span>
+    <div class="crumb-url">quickbite.design › process › case-study</div>
+    <h2>QuickBite: Turning Ingredients Into Meals</h2>
+    <p>A mobile app prototype that helps busy people decide what to cook using ingredients they already have. QuickBite combines ingredient tracking, fridge scanning, recipe suggestions, substitutions, and an expiring-food <em>Rescue Mode</em> to reduce stress, save time, and limit waste.</p>
+    <div class="snippet-meta">
+      <dl><dt>Project type</dt><dd>Mobile app prototype</dd></dl>
+      <dl><dt>Users</dt><dd>Students, busy professionals, beginner cooks</dd></dl>
+      <dl><dt>Role</dt><dd>UX research, product design, prototyping, evaluation</dd></dl>
+      <dl><dt>Tools</dt><dd>Figma · HTML / CSS / JavaScript</dd></dl>
+      <dl><dt>Core problem</dt><dd>Users have ingredients, but don't know what to cook with them.</dd></dl>
+    </div>
+  </div>
+</div>
+
+<!-- ================ PROBLEM ================ -->
+<section class="section" id="problem">
+  <div class="section-head">
+    <span class="section-num">§ 01 — Problem</span>
+    <h2>What are users actually searching for?</h2>
+    <p class="sub">The deeper problem isn't recipes — it's quick decisions under fatigue.</p>
+  </div>
+
+  <p class="lead-para">We began with the broad question of how people cook and manage meals at home. Through five rounds of problem narrowing, we re-framed a vague pain point into a specific design problem: many users have ingredients at home but still struggle to quickly decide what to make. The result is stress, skipped meals, takeout, and food that quietly expires in the fridge.</p>
+
+  <p class="lead-para">This problem is especially common for students, full-time workers, beginner cooks, and busy households because they often face limited time, inconsistent routines, and varying access to kitchen resources. Existing tools partially address the issue, but they often focus on browsing recipes, building weekly meal plans, or manually entering full pantry lists rather than helping users make a fast, realistic decision in the moment.</p>
+
+  <!-- 5-step narrowing -->
+  <div class="narrow" aria-label="Problem narrowing in five steps">
+    <div class="step"><span class="num">01</span><div><h4>Cooking at home is hard</h4><p>Broad: people struggle with meals across the week.</p></div></div>
+    <div class="step"><span class="num">02</span><div><h4>Decisions, not recipes, are the bottleneck</h4><p>Most users don't lack ideas — they lack the energy to pick one.</p></div></div>
+    <div class="step"><span class="num">03</span><div><h4>Decisions happen <em>in the moment</em></h4><p>Planning ahead is rare. Real cooking starts when someone is already hungry.</p></div></div>
+    <div class="step"><span class="num">04</span><div><h4>Context constrains the answer</h4><p>Time, skill, equipment, dietary needs, and what's already on hand all matter.</p></div></div>
+    <div class="step"><span class="num">05</span><div><h4>Ingredients are the truest starting point</h4><p>What you <em>have</em> is more honest than what you <em>plan</em>.</p></div></div>
+  </div>
+
+  <!-- Design Question callout -->
+  <div class="dq">
+    <span class="dq-label">Design Question · How might we…</span>
+    <blockquote>How might we design a tool that helps busy individuals <em>quickly discover simple meal options</em> based on the ingredients they already have, so they can reduce stress, save time, and make better use of food at home?</blockquote>
+  </div>
+
+  <p class="lead-para">Existing recipe apps assume the user wants to browse or plan ahead. Our research showed users often need support <em>in the moment</em>: "I'm tired, I have random ingredients, what can I realistically make right now?" That single sentence became the design north star.</p>
+</section>
+
+<!-- ================ RESEARCH ================ -->
+<section class="section" id="research">
+  <div class="section-head">
+    <span class="section-num">§ 02 — Research</span>
+    <h2>Search results from real users</h2>
+    <p class="sub">Anonymous surveys, literature review, and an affinity synthesis.</p>
+  </div>
+
+  <p class="lead-para">We ran an anonymous survey method with three primary participants and supplemented it with literature on home cooking, food insecurity, and the emotional weight of meal decisions. Below are three insights that reframed the problem and pulled us away from "build another recipe app."</p>
+
+  <!-- Three insight result cards using actual user quotes -->
+  <div class="quote-grid">
+    <article class="quote">
+      <div class="who">
+        <span class="avatar">U1</span>
+        <div>
+          <div class="name">User 1</div>
+          <div class="role">Student · Anonymous survey</div>
+        </div>
+      </div>
+      <p>"I just eat whenever I can. If I have time between classes, I'll grab something quick, but sometimes I just skip meals without realizing."</p>
+      <div class="insight">Insight · Users are short on time</div>
+    </article>
+
+    <article class="quote">
+      <div class="who">
+        <span class="avatar">U2</span>
+        <div>
+          <div class="name">User 2</div>
+          <div class="role">Full-time worker · Anonymous survey</div>
+        </div>
+      </div>
+      <p>"After work I'm too tired to cook, so I just order food or eat something easy. I usually pick whatever is quick."</p>
+      <div class="insight">Insight · Decision fatigue is the real cost</div>
+    </article>
+
+    <article class="quote">
+      <div class="who">
+        <span class="avatar">U3</span>
+        <div>
+          <div class="name">User 3</div>
+          <div class="role">Beginner cook · Anonymous survey</div>
+        </div>
+      </div>
+      <p>"Healthy food can be expensive, and I don't always have the ingredients or time. I just figure it out day by day."</p>
+      <div class="insight">Insight · Realistic constraints matter</div>
+    </article>
+  </div>
+
+  <figure class="fig">
+    <img src="images/fig-user-research.png" alt="Three anonymous survey responses from User 1, User 2, and User 3 covering meal habits, barriers to healthy eating, and access to kitchens." />
+    <figcaption><strong>Anonymous survey responses, full text.</strong> Three users described how they actually handle meals during a normal day — short windows, limited energy, and decisions made on the fly.</figcaption>
+  </figure>
+
+  <!-- Affinity clusters -->
+  <h3 style="font-family: var(--font-display); font-weight: 600; font-size: 26px; letter-spacing: -0.01em; margin: 40px 0 4px;">Affinity synthesis</h3>
+  <p class="lead-para" style="margin-bottom: 4px;">Clustering the survey responses surfaced three pressure systems that any solution would have to respect.</p>
+
+  <div class="affinity">
+    <div class="cluster">
+      <h4>Time pressure</h4>
+      <ul>
+        <li>"Whatever is fastest or closest."</li>
+        <li>Work breaks too short to sit and eat.</li>
+        <li>Day-by-day, not week-by-week.</li>
+      </ul>
+    </div>
+    <div class="cluster">
+      <h4>Decision fatigue</h4>
+      <ul>
+        <li>Tired after work → defaults to takeout.</li>
+        <li>Recipe sites feel overwhelming.</li>
+        <li>"I want to eat better, but I feel limited."</li>
+      </ul>
+    </div>
+    <div class="cluster">
+      <h4>Realistic constraints</h4>
+      <ul>
+        <li>Healthy food can be expensive.</li>
+        <li>Inconsistent kitchen / equipment access.</li>
+        <li>Beginner cooks need step-by-step guidance.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Literature -->
+  <h3 style="font-family: var(--font-display); font-weight: 600; font-size: 26px; letter-spacing: -0.01em; margin: 48px 0 4px;">Supporting literature</h3>
+  <p class="lead-para" style="margin-bottom: 4px;">Six academic sources grounded what we heard from users in broader patterns — dietary quality, food insecurity, and the emotional benefits of guided cooking.</p>
+
+  <figure class="fig">
+    <img src="images/fig-literature.png" alt="Summaries of six research papers spanning home cooking dietary quality, sociodemographic factors, stress and meal preparation, culinary coaching during COVID-19, conversational agents for mindful eating, and food insecurity among college students." />
+    <figcaption><strong>Literature review.</strong> Cooking at home correlates with better diet quality and lower stress when paired with guidance. Beginner cooks gain confidence from simple, supported instructions — a direct argument for QuickBite's match-percentage and substitution UI.</figcaption>
+  </figure>
+
+  <p class="lead-para">The research arc was unambiguous: <strong>the design challenge is not giving users more options.</strong> It is helping them narrow options based on real-world constraints — time, energy, ingredients on hand, cooking skill, dietary needs, equipment, and what is about to expire.</p>
+</section>
+
+<!-- ================ COMPETITIVE ANALYSIS ================ -->
+<section class="section" id="competitive">
+  <div class="section-head">
+    <span class="section-num">§ 03 — Competitive analysis</span>
+    <h2>What existing tools missed</h2>
+    <p class="sub">Three competitors, the same gap.</p>
+  </div>
+
+  <div class="compete">
+    <div class="comp-card">
+      <h4>SuperCook</h4>
+      <span class="tag">Recipe database</span>
+      <p class="strength">Huge ingredient-based recipe database (11M recipes from 18,000 sources).</p>
+      <p class="weakness">Returns thousands of results, requires full pantry setup before usage, links out to third-party sites, no learning over time, no time / mood context.</p>
+    </div>
+    <div class="comp-card">
+      <h4>Mealime</h4>
+      <span class="tag">Weekly meal planning</span>
+      <p class="strength">Strong weekly planning, auto-built grocery lists sorted by aisle, dietary filters that work well.</p>
+      <p class="weakness">Built for planning ahead, not for spontaneous "what can I make now" decisions. Variety stagnates. Shopping list resets on subscription lapse. Mobile only.</p>
+    </div>
+    <div class="comp-card">
+      <h4>MyFridgeFood</h4>
+      <span class="tag">Match-percentage selector</span>
+      <p class="strength">Simple ingredient checkboxes, instant use without login, recipes show match percentage.</p>
+      <p class="weakness">Outdated UI, inaccurate matching, limited catalog, no personalization, no mood / time / equipment context.</p>
+    </div>
+  </div>
+
+  <div class="opportunity">
+    <span class="label">Opportunity</span>
+    <p>QuickBite shouldn't be another recipe database. It should be a <em>context-aware decision assistant</em> — one that helps users choose realistic meals based on what they have, what is expiring, and what they are capable of cooking <em>right now</em>.</p>
+  </div>
+
+  <figure class="fig" style="margin-top: 28px;">
+    <img src="images/fig-competitive.png" alt="Detailed competitive analysis of SuperCook, Mealime, and MyFridgeFood with functions, strengths, weaknesses, and consensus improvements." />
+    <figcaption><strong>Competitive landscape, full breakdown.</strong> The consensus improvements column became QuickBite's product brief: AI-powered decision engine, context-aware ranking, camera-based scanning, personalized learning loop, conversational UX.</figcaption>
+  </figure>
+</section>
+
+<!-- ================ STAKEHOLDERS / PERSONAS ================ -->
+<section class="section" id="stakeholders">
+  <div class="section-head">
+    <span class="section-num">§ 04 — Stakeholders</span>
+    <h2>Who are we designing for?</h2>
+    <p class="sub">Direct users and the larger systems they sit inside.</p>
+  </div>
+
+  <div class="stake">
+    <div class="stake-col">
+      <h4>Direct users</h4>
+      <ul>
+        <li>Students balancing class schedules, inconsistent meal windows, and tight budgets</li>
+        <li>Busy professionals cooking after long work days, often tired</li>
+        <li>Parents and caregivers feeding families with limited prep time</li>
+        <li>Beginner cooks who want guidance, not improvisation</li>
+      </ul>
+    </div>
+    <div class="stake-col indirect">
+      <h4>Indirect stakeholders</h4>
+      <ul>
+        <li>Grocery stores and meal-kit services interested in retention and basket size</li>
+        <li>Communities promoting healthier home cooking and dietary literacy</li>
+        <li>Designers and developers extending the ecosystem (skill plugins, smart kitchens)</li>
+        <li>Sustainability advocates focused on household food waste</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="personas">
+    <article class="persona">
+      <div class="photo">J</div>
+      <div>
+        <h4>Jeff · 20</h4>
+        <div class="role">College student · cooks 2–3× / week</div>
+        <p>Lives with two roommates. Cooks when he has energy but skips meals between classes. Already owns ingredients he forgets about. Wants one button that says "you can actually make this tonight."</p>
+      </div>
+    </article>
+    <article class="persona">
+      <div class="photo">D</div>
+      <div>
+        <h4>Daniel · 38</h4>
+        <div class="role">Grocery store manager · indirect stakeholder</div>
+        <p>Cares about household-level food waste because it shapes purchasing behavior. Sees QuickBite as a way to keep customers cooking — and therefore returning — instead of giving up and ordering delivery.</p>
+      </div>
+    </article>
+  </div>
+
+  <p class="lead-para" style="margin-top: 28px;">Because direct users had limited time, inconsistent schedules, and varying cooking confidence, QuickBite had to be <em>fast, low-friction, and beginner-friendly</em>. Because indirect stakeholders cared about healthier eating and waste reduction, we layered in pantry tracking, Rescue Mode, and long-term impact statistics.</p>
+</section>
+
+<!-- ================ FEATURE PRIORITIZATION ================ -->
+<section class="section" id="features">
+  <div class="section-head">
+    <span class="section-num">§ 05 — Feature prioritization</span>
+    <h2>From all possible features to the right features</h2>
+    <p class="sub">An impact × feasibility matrix forced a tradeoff.</p>
+  </div>
+
+  <p class="lead-para">We brainstormed roughly twenty features ranging from voice control to smart-kitchen integration. Plotting them against impact and feasibility kept us from building a bloated app. The cut: only ship what directly serves the design question.</p>
+
+  <div class="priority-grid">
+    <div class="tier must">
+      <div class="tier-head"><h4>Must have</h4><span class="count">7</span></div>
+      <ul>
+        <li>Ingredient inventory</li>
+        <li>Recipe database + meal suggestions</li>
+        <li>AI recipe generation from current pantry</li>
+        <li>Grocery list</li>
+        <li>Expiration tracking</li>
+        <li>Substitution engine</li>
+        <li>Context-aware filter</li>
+      </ul>
+    </div>
+    <div class="tier should">
+      <div class="tier-head"><h4>Should have</h4><span class="count">8</span></div>
+      <ul>
+        <li>Nutrition info + tracking</li>
+        <li>AI fridge scanner</li>
+        <li>Favorites, bookmarks, history</li>
+        <li>Filters / preferences</li>
+        <li>Learning taste filter</li>
+        <li>Leftover tracking</li>
+        <li>Waste & budget analytics</li>
+        <li>Conversational meal planning</li>
+      </ul>
+    </div>
+    <div class="tier nice">
+      <div class="tier-head"><h4>Nice to have</h4><span class="count">5</span></div>
+      <ul>
+        <li>Voice assistant / hands-free</li>
+        <li>Social sharing</li>
+        <li>Smart kitchen integration</li>
+        <li>Cooking mode</li>
+        <li>Skill progression</li>
+      </ul>
+    </div>
+  </div>
+
+  <figure class="fig">
+    <img src="images/fig-features.png" alt="Feature ideation board with twenty sticky-note features above a 2x2 prioritization matrix plotting impact against feasibility, with a key features list on the right." />
+    <figcaption><strong>Ideation board and prioritization matrix.</strong> Features were plotted against audience impact (vertical) and feasibility (horizontal). High-impact, high-feasibility items became the must-haves; high-impact but harder ones became should-haves; low-feasibility novelty features were deferred.</figcaption>
+  </figure>
+
+  <p class="lead-para">The matrix made one important tradeoff explicit: we wanted QuickBite to feel intelligent and complete, but the core experience had to stay simple. Features like social sharing and smart-kitchen integration were deferred not because they're bad ideas, but because they did not solve the in-the-moment decision problem.</p>
+</section>
+
+<!-- ================ VALUE PROPOSITION ================ -->
+<section class="section" id="value">
+  <div class="section-head">
+    <span class="section-num">§ 06 — Direction</span>
+    <h2>Value proposition + solution approach</h2>
+    <p class="sub">The bridge from research to design.</p>
+  </div>
+
+  <figure class="fig">
+    <img src="images/fig-value-prop.png" alt="Value proposition and solution approach written as two paired statements: a meal suggestion app for busy people, and a system that turns ingredients into realistic meal ideas." />
+    <figcaption><strong>Locked-in direction.</strong> The value proposition (left) and solution approach (right) became the working brief. Speed, clarity, and convenience were chosen over comprehensiveness.</figcaption>
+  </figure>
+</section>
+
+<!-- ================ LOW-FI PROTOTYPE ================ -->
+<section class="section" id="lofi">
+  <div class="section-head">
+    <span class="section-num">§ 07 — Low-fidelity prototype</span>
+    <h2>Testing the basic flow</h2>
+    <p class="sub">Before the polish, the structure.</p>
+  </div>
+
+  <p class="lead-para">The first prototype was hand-sketched: login, landing, ingredient entry, meal suggestions, recipe page, weekly plan, and cooking steps. At this stage QuickBite was still closer to a general meal-planning product. The sketches' job wasn't beauty — it was finding which screens earned their place.</p>
+
+  <figure class="fig">
+    <img src="images/fig-lowfidelity.png" alt="Hand-drawn low-fidelity prototype showing early QuickBite screens and user flow." />
+    <figcaption>
+      <strong>Original low-fidelity prototype.</strong> This sketch mapped the early QuickBite flow, including ingredient input, meal suggestions, recipe details, weekly planning, and cooking steps. It helped us test the structure before moving into higher-fidelity interface design.
+    </figcaption>
+  </figure>
+
+  <p class="lead-para">After this round and the next wave of research, the app narrowed. The cooking-mode and weekly-plan screens stepped back. Scanning, pantry tracking, and quick decisions stepped forward. By the time we moved to high-fidelity, QuickBite was no longer "a recipe app with a pantry feature" — it was a pantry-first decision tool that happened to surface recipes.</p>
+</section>
+
+<!-- ================ FINAL DESIGN SOLUTION ================ -->
+<section class="section" id="design">
+  <div class="section-head">
+    <span class="section-num">§ 08 — Design solution</span>
+    <h2>The QuickBite answer page</h2>
+    <p class="sub">Five flows that map back to the design question.</p>
+  </div>
+
+  <p class="lead-para">The final prototype is organized around five flows. Each flow corresponds to a constraint surfaced during research — personalization, ingredient capture, recommendation, waste reduction, and ongoing support.</p>
+
+  <!-- Flow A: Personalization -->
+  <div class="flow">
+    <div class="flow-head"><span class="flow-num">A.</span><h3>Personalization flow</h3></div>
+    <p>QuickBite begins by collecting constraints so recommendations are never generic. Dietary preferences, allergies, cooking confidence, and available equipment all change what counts as a realistic meal.</p>
+    <div class="screens">
+      <figure class="screen">
+        <img src="images/skill-setup.jpeg" alt="Onboarding screen asking how confident the user is in the kitchen and what equipment they have." />
+        <figcaption><strong>Skill + equipment</strong>A beginner with only a stovetop should never see a recipe that assumes an air fryer.</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- Flow B: Ingredient capture -->
+  <div class="flow">
+    <div class="flow-head"><span class="flow-num">B.</span><h3>Ingredient capture flow</h3></div>
+    <p>Typing every item is tedious, so QuickBite supports fridge scanning. But automated detection can be wrong — the scan review and confirm screens give users explicit control, which builds trust.</p>
+    <div class="screens">
+      <figure class="screen">
+        <img src="images/home.jpeg" alt="QuickBite home screen showing Welcome back Maya, with three primary entry points: enter manually, scan your fridge, and use expiring ingredients." />
+        <figcaption><strong>Home</strong>Three entry points: enter, scan, or rescue.</figcaption>
+      </figure>
+      <figure class="screen">
+        <img src="images/scan.jpeg" alt="Scan Your Fridge camera interface with framing guides for fridge contents." />
+        <figcaption><strong>Scan</strong>Frame the fridge; QuickBite detects items and freshness.</figcaption>
+      </figure>
+      <figure class="screen">
+        <img src="images/add-ingredients.jpeg" alt="Add Ingredients screen with category chips for proteins, vegetables, and dairy, with two ingredients already selected." />
+        <figcaption><strong>Add manually</strong>Categorized chips speed up entry when scanning isn't useful.</figcaption>
+      </figure>
+      <figure class="screen">
+        <img src="images/confirm.jpeg" alt="Confirm Ingredients screen with a recipe match preview showing two ingredients match twelve possible recipes." />
+        <figcaption><strong>Confirm</strong>The match preview rewards careful entry before the user commits.</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- Flow C: Recommendation -->
+  <div class="flow">
+    <div class="flow-head"><span class="flow-num">C.</span><h3>Meal recommendation flow</h3></div>
+    <p>Recommendations are designed to <em>explain</em>, not just suggest. Each card shows ready status, match percentage, what's missing, and whether substitutions are possible.</p>
+    <div class="screens">
+      <figure class="screen">
+        <img src="images/ai-loading.jpeg" alt="QuickBite AI is working screen with a personalizing suggestions message and a loading indicator." />
+        <figcaption><strong>AI working</strong>A short, honest loading moment.</figcaption>
+      </figure>
+      <figure class="screen">
+        <img src="images/suggestions.jpeg" alt="Meal Suggestions screen showing six smart matches with filter chips, sort by best match, and recipe cards with ready badges, missing ingredients, and swap availability." />
+        <figcaption><strong>Suggestions</strong>Ready / missing / swap-available are first-class signals.</figcaption>
+      </figure>
+      <figure class="screen">
+        <img src="images/mood.jpeg" alt="How are you feeling screen letting the user pick energy level and available time." />
+        <figcaption><strong>Mood + time</strong>The same pantry suggests different meals on a tired Tuesday vs a relaxed Sunday.</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- Flow D: Waste reduction -->
+  <div class="flow">
+    <div class="flow-head"><span class="flow-num">D.</span><h3>Food waste reduction flow</h3></div>
+    <p>Rescue Mode shifted the framing from "what can I cook?" to "what should I use before it goes bad?" — connecting meal planning to a measurable household outcome.</p>
+    <div class="screens">
+      <figure class="screen">
+        <img src="images/pantry.jpeg" alt="My Pantry screen with a warning that three items are expiring soon, a category filter, and inventory rows." />
+        <figcaption><strong>Pantry</strong>A persistent picture of what you actually have.</figcaption>
+      </figure>
+      <figure class="screen">
+        <img src="images/use-it-up.jpeg" alt="Use It Up Mode screen showing four expiring items with days until expiration and quick recipes using those items." />
+        <figcaption><strong>Use It Up Mode</strong>Expiring items get top billing in recommendations.</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- Flow E: Support -->
+  <div class="flow">
+    <div class="flow-head"><span class="flow-num">E.</span><h3>Support features</h3></div>
+    <p>The pieces that make QuickBite useful past one meal: saved recipes, search by cuisine, the conversational AI assistant, and a profile that converts cooking into long-term feedback (money saved, waste avoided).</p>
+    <div class="screens">
+      <figure class="screen">
+        <img src="images/saved.jpeg" alt="Saved Recipes screen with three saved recipes, each showing a thumbnail, time, difficulty, and a Start Cooking action." />
+        <figcaption><strong>Saved</strong>One tap to return to what worked.</figcaption>
+      </figure>
+      <figure class="screen">
+        <img src="images/search.jpeg" alt="Search Recipes screen with trending topics and cuisine browse tiles." />
+        <figcaption><strong>Search</strong>Browse by mood, time, or cuisine.</figcaption>
+      </figure>
+      <figure class="screen">
+        <img src="images/ask-ai.jpeg" alt="Ask QuickBite AI-powered meal assistant screen with prompt chips and a chat input." />
+        <figcaption><strong>Ask QuickBite</strong>Conversational fallback for off-menu questions.</figcaption>
+      </figure>
+      <figure class="screen">
+        <img src="images/profile-prefs.jpeg" alt="Profile Preferences tab showing dietary preferences, allergies, preferred cooking time, and skill level." />
+        <figcaption><strong>Profile · Preferences</strong>Editable constraints that drive every recommendation.</figcaption>
+      </figure>
+      <figure class="screen">
+        <img src="images/profile-history.jpeg" alt="Profile History tab showing recent searches and saved recipes count." />
+        <figcaption><strong>Profile · History</strong>Recent searches and saves.</figcaption>
+      </figure>
+      <figure class="screen">
+        <img src="images/profile-stats.jpeg" alt="Profile Stats tab showing twelve recipes cooked, forty seven dollars saved, two point three kg food waste avoided, and eight substitutions made." />
+        <figcaption><strong>Profile · Stats</strong>Long-term impact reinforces the habit.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ================ EVALUATION ================ -->
+<section class="section" id="evaluation">
+  <div class="section-head">
+    <span class="section-num">§ 09 — Evaluation</span>
+    <h2>Testing the result</h2>
+    <p class="sub">Wizard of Oz, usability testing, journey mapping, heuristic review.</p>
+  </div>
+
+  <p class="lead-para">We used a layered evaluation: Wizard of Oz testing for the not-yet-built scanning feature, structured task-based usability sessions for the prototype flow, and a heuristic review against Nielsen-style principles. Participants included college students and one full-time worker; the lead session was with <strong>Rohit, age 19, intermediate cook, who cooks 4–5 times per week.</strong></p>
+
+  <h3 style="font-family: var(--font-display); font-weight: 600; font-size: 22px; margin: 30px 0 12px;">Tasks tested</h3>
+  <div class="card muted" style="margin-bottom: 28px;">
+    <ul style="margin: 0; padding-left: 18px; columns: 2; column-gap: 28px; line-height: 1.8;">
+      <li>Explore the home screen</li>
+      <li>Manually add ingredients</li>
+      <li>Use the fridge scanning feature</li>
+      <li>Review detected ingredients</li>
+      <li>Select a recipe</li>
+      <li>Navigate the cooking / recommendation flow</li>
+    </ul>
+  </div>
+
+  <h3 style="font-family: var(--font-display); font-weight: 600; font-size: 22px; margin: 30px 0 12px;">Findings</h3>
+  <div class="findings">
+    <div class="finding-col worked">
+      <h4>What worked</h4>
+      <ul>
+        <li>Users immediately understood the ingredient-to-recipe flow without guidance.</li>
+        <li>Ingredient breakdown and match percentages were called out as genuinely useful.</li>
+        <li>The "What Can I Make?" concept landed as a product idea worth using.</li>
+        <li>Saving recipes for later was a clear request — and it shipped.</li>
+        <li>Overall flow was judged "well structured" in Rohit's session.</li>
+      </ul>
+    </div>
+    <div class="finding-col improve">
+      <h4>What needed improvement</h4>
+      <ul>
+        <li>Ingredient recognition accuracy is the biggest technical risk and would hurt trust if shipped naive.</li>
+        <li>Users wanted clearer ranking — by match percentage <em>or</em> by cook time, not just "Best Match."</li>
+        <li>The scan flow needed explicit confirmation feedback before recipes appeared.</li>
+        <li>The ingredient selection page felt cluttered when many items were displayed at once.</li>
+        <li>How the pantry updates after cooking was unclear.</li>
+      </ul>
+    </div>
+  </div>
+
+  <figure class="fig">
+    <img src="images/fig-testing-plan.png" alt="User testing plan: Wizard of Oz testing, college students and full-time workers as participants, task scenarios including exploring the home screen and using the fridge scanning feature, and learning goals." />
+    <figcaption><strong>User testing plan.</strong> Wizard of Oz was the right method for testing the scanning experience before building a CV pipeline — it isolates the UX question from the ML question.</figcaption>
+  </figure>
+
+  <figure class="fig">
+    <img src="images/fig-testing-2.png" alt="Detailed write-up of user testing session two with Rohit, age 19, intermediate cook. Includes testing results, user feedback, and important observations." />
+    <figcaption><strong>User testing #2 — Rohit.</strong> The strongest single takeaway: "The idea is super useful and I would use it; the app just needs to work better and feel cleaner."</figcaption>
+  </figure>
+
+  <figure class="fig">
+    <img src="images/fig-heuristic.png" alt="Heuristic evaluation paragraph reviewing the prototype against principles like visibility of system status, user control, and minimalist design, with identified improvements including pantry update clarity and simpler ingredient selection." />
+    <figcaption><strong>Heuristic evaluation.</strong> Strong on familiar icons and a clear flow; weaker on system-status feedback for pantry updates and clutter when many ingredients are visible.</figcaption>
+  </figure>
+
+  <!-- Changes table -->
+  <div class="changes">
+    <h4>Design changes that came directly from evaluation</h4>
+    <table>
+      <thead>
+        <tr><th>Change</th><th>Why</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Added an explicit scan-review step</td><td>Users distrusted the silent auto-detection. Confirmation builds trust before recipes appear.</td></tr>
+        <tr><td>Surfaced match percentages and "why recommended" logic</td><td>Rohit explicitly asked for better ranking and reasoning behind suggestions.</td></tr>
+        <tr><td>Strengthened Rescue Mode for expiring ingredients</td><td>The pantry warning and Use It Up Mode became primary actions, not buried features.</td></tr>
+        <tr><td>Added grocery list support for missing items</td><td>Closed the loop between "what's missing" and "what to buy."</td></tr>
+        <tr><td>Expanded recipe detail with steps, substitutions, nutrition</td><td>Heuristic review flagged thin recipe pages and unclear substitution affordances.</td></tr>
+        <tr><td>Reorganized the home screen around scan + rescue</td><td>The two highest-impact entry points are now first and most visible.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================ DESIGN RATIONALE ================ -->
+<section class="section" id="rationale">
+  <div class="section-head">
+    <span class="section-num">§ 10 — Design rationale</span>
+    <h2>Why these decisions?</h2>
+    <p class="sub">Five choices that defined the final product.</p>
+  </div>
+
+  <div class="decisions">
+    <article class="decision">
+      <span class="num">01</span>
+      <h4>Ingredient-first, not recipe-first</h4>
+      <p class="why"><strong>Why</strong> Research showed users usually have ingredients but no idea what to make. The decision happens in the kitchen, not on the recipe site.</p>
+      <p class="result"><strong>Result</strong> The app opens with three ingredient entry points — scan, manual, rescue — before any recipe is shown.</p>
+    </article>
+
+    <article class="decision">
+      <span class="num">02</span>
+      <h4>Scan plus manual entry</h4>
+      <p class="why"><strong>Why</strong> Scanning reduces friction but recognition can be wrong. Removing user control would break trust the moment the model misfires.</p>
+      <p class="result"><strong>Result</strong> Every scan is followed by a review screen where the user can correct or add items before the AI proceeds.</p>
+    </article>
+
+    <article class="decision">
+      <span class="num">03</span>
+      <h4>Specificity over generic AI</h4>
+      <p class="why"><strong>Why</strong> Generic suggestions ignore the real cooking variables — time, skill, equipment, dietary needs, mood — all of which research surfaced as decisive.</p>
+      <p class="result"><strong>Result</strong> A mood + time picker, an explicit skill / equipment onboarding, and dietary filters all feed the recommendation engine.</p>
+    </article>
+
+    <article class="decision">
+      <span class="num">04</span>
+      <h4>Explainable recommendations</h4>
+      <p class="why"><strong>Why</strong> Users trust suggestions more when they understand the reasoning. Rohit said the ingredient → recipe link "seemed very helpful" when made visible.</p>
+      <p class="result"><strong>Result</strong> Each meal card surfaces match percentage, "ready now" status, what's missing, and available swaps — never a black box.</p>
+    </article>
+
+    <article class="decision">
+      <span class="num">05</span>
+      <h4>Rescue Mode as a primary action</h4>
+      <p class="why"><strong>Why</strong> Food waste was a meaningful part of the problem space and a real product differentiator. Competitive analysis showed no app made it first-class.</p>
+      <p class="result"><strong>Result</strong> The pantry warns about expiring items; Use It Up Mode promotes recipes that consume them; the profile tracks waste avoided in kilograms.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ================ REFLECTION ================ -->
+<section class="section" id="reflection">
+  <div class="section-head">
+    <span class="section-num">§ 11 — Reflection</span>
+    <h2>What changed in our thinking?</h2>
+    <p class="sub">The biggest shift was about what design even is.</p>
+  </div>
+
+  <div class="reflection">
+    <p class="insight-q">A design process isn't about adding more features. It's about making better decisions, faster, and being honest about what to cut.</p>
+
+    <div class="reflect-grid">
+      <div class="reflect-item">
+        <h5>About design thinking</h5>
+        <p>We learned how to narrow a vague problem into a specific design question — and how that narrowing, done well, makes every later decision easier.</p>
+      </div>
+      <div class="reflect-item">
+        <h5>How the idea evolved</h5>
+        <p>QuickBite started life as a general meal-planning app. Through research and prioritization, it became an ingredient-first, context-aware decision assistant. The pivot wasn't dramatic — it was a slow tightening.</p>
+      </div>
+      <div class="reflect-item">
+        <h5>Biggest insight</h5>
+        <p>Specificity matters more than capability. A small, opinionated feature like Rescue Mode communicated more about QuickBite's point of view than any general recipe browser ever could.</p>
+      </div>
+      <div class="reflect-item">
+        <h5>Team challenge</h5>
+        <p>The hardest team conversations were about cutting features. The prioritization matrix wasn't just a tool — it was the artifact we kept returning to whenever scope tried to creep back in.</p>
+      </div>
+      <div class="reflect-item">
+        <h5>What we'd improve</h5>
+        <p>More testing with beginner cooks specifically, real computer-vision pipeline for scanning, better post-cook pantry updates, push notifications for expiring food, and stronger recipe ranking.</p>
+      </div>
+      <div class="reflect-item">
+        <h5>What the project taught us</h5>
+        <p>Design maturity looks less like clever features and more like restraint — building exactly what the design question demands, and consciously deferring the rest with a written rationale.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================ LIMITATIONS & FUTURE ================ -->
+<section class="section" id="future">
+  <div class="section-head">
+    <span class="section-num">§ 12 — Limitations &amp; future</span>
+    <h2>Where the design ends — and what's next</h2>
+    <p class="sub">An honest accounting of where the prototype falls short.</p>
+  </div>
+
+  <div class="split-list">
+    <div class="pane limit">
+      <h4>Limitations</h4>
+      <ul>
+        <li>Fridge scanning is simulated, not powered by a real computer-vision pipeline.</li>
+        <li>Recipe matching is simplified; production-grade ranking would need a real engine.</li>
+        <li>Pantry tracking depends on the user keeping data up to date.</li>
+        <li>Allergy filtering would need stronger validation before being safety-critical.</li>
+        <li>Nutrition and "money saved" figures are estimates, not audited values.</li>
+        <li>AI features assume a secure backend that doesn't exist yet.</li>
+      </ul>
+    </div>
+    <div class="pane">
+      <h4>Future plan</h4>
+      <ul>
+        <li>Real computer-vision ingredient recognition and freshness estimation.</li>
+        <li>Receipt + barcode scanning to auto-populate the pantry.</li>
+        <li>Pantry auto-decrement after a recipe is cooked.</li>
+        <li>Stronger ranking algorithm with personal learning loop.</li>
+        <li>Step-by-step cooking mode with timers and hands-free voice.</li>
+        <li>Push notifications for expiring food.</li>
+        <li>Privacy controls for fridge images and dietary data.</li>
+        <li>More usability testing with students, workers, and beginner cooks.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================ REFERENCES ================ -->
+<section class="section" id="references">
+  <div class="section-head">
+    <span class="section-num">§ 13 — References</span>
+    <h2>Sources &amp; supporting research</h2>
+    <p class="sub">Academic sources that grounded the user research.</p>
+  </div>
+
+  <ul class="refs">
+    <li>Mills, S., et al. (2017). Home-prepared food, dietary quality and socio-demographic factors: a cross-sectional analysis of the UK National Diet and Nutrition Survey 2008–16. <em>International Journal of Behavioral Nutrition and Physical Activity.</em></li>
+    <li>Taillie, L. S. (2018). Who's cooking? Trends in US home food preparation by gender, education, and race/ethnicity from 2003 to 2016. <em>Nutrition Journal.</em></li>
+    <li>Farmer, N., et al. (2021). The impact of a culinary coaching telemedicine program on home cooking and emotional well-being during the COVID-19 pandemic. <em>Nutrients.</em></li>
+    <li>Soliah, L., et al. (2012). Using food to reduce stress: Effects of choosing meal components and preparing a meal. <em>Food Quality and Preference.</em></li>
+    <li>Pereira-Doel, P., et al. (2021). Enhancing well-being through food: A conversational agent for mindful eating and living. <em>ACM Conference on Conversational User Interfaces.</em></li>
+    <li>El Zein, A., et al. (2018). Home-prepared meals among college students at-risk for food insecurity: A mixed-methods study. <em>Journal of Nutrition Education and Behavior.</em></li>
+    <li>Nielsen, J. (1994). 10 usability heuristics for user interface design. <em>Nielsen Norman Group.</em></li>
+    <li>SuperCook. (n.d.). <em>SuperCook — recipe search by ingredients.</em> supercook.com</li>
+    <li>Mealime. (n.d.). <em>Mealime — meal planning app.</em> mealime.com</li>
+    <li>MyFridgeFood. (n.d.). <em>MyFridgeFood — what can I make with what I have?</em> myfridgefood.com</li>
+  </ul>
+</section>
+
+<!-- ================ FOOTER ================ -->
+<footer>
+  <div class="foot-brand">Quick<em>Bite</em></div>
+  <p>A design case study about turning ingredients into meals.</p>
+  <p>Built as a final project · INFO design course · 2026</p>
+  <div class="foot-crumb">quickbite.design › process › case-study</div>
+</footer>
+
+<!-- ================ SCRIPTS ================ -->
+<script>
+(function () {
+  /* ---------- Section index for search ---------- */
+  const sections = [
+    { id: 'overview',     title: 'Overview',                 crumb: 'case-study',           tags: ['quickbite','app','summary','introduction','overview'] },
+    { id: 'problem',      title: 'Problem Narrowing',        crumb: 'problem › narrowing',  tags: ['problem','narrow','why','five','steps','decision'] },
+    { id: 'problem',      title: 'Design Question (HMW)',    crumb: 'problem › question',   tags: ['problem','design question','hmw','how might we'] },
+    { id: 'research',     title: 'User Research · Surveys',  crumb: 'research › users',     tags: ['research','users','survey','interview','user 1','user 2','user 3'] },
+    { id: 'research',     title: 'Affinity Synthesis',       crumb: 'research › affinity',  tags: ['affinity','clusters','synthesis','time','decision fatigue'] },
+    { id: 'research',     title: 'Literature Review',        crumb: 'research › literature',tags: ['research','literature','papers','academic'] },
+    { id: 'competitive',  title: 'Competitive Analysis',     crumb: 'research › competitors',tags: ['competitive','competitors','supercook','mealime','myfridgefood','market'] },
+    { id: 'stakeholders', title: 'Stakeholders & Personas',  crumb: 'design › users',       tags: ['users','personas','stakeholders','jeff','daniel'] },
+    { id: 'features',     title: 'Feature Prioritization',   crumb: 'design › priorities',  tags: ['features','prioritization','matrix','must have'] },
+    { id: 'value',        title: 'Value Proposition',        crumb: 'design › direction',   tags: ['value','solution','proposition','direction'] },
+    { id: 'lofi',         title: 'Low-Fidelity Prototype',   crumb: 'design › lo-fi',       tags: ['prototype','low-fi','sketch','wireframe','lofi'] },
+    { id: 'design',       title: 'Final Design Solution',    crumb: 'design › prototype',   tags: ['prototype','design','solution','final','screens','high-fi'] },
+    { id: 'evaluation',   title: 'Evaluation · Usability',   crumb: 'evaluation › testing', tags: ['evaluation','testing','usability','rohit','wizard of oz'] },
+    { id: 'evaluation',   title: 'Heuristic Evaluation',     crumb: 'evaluation › heuristic',tags: ['heuristic','testing','evaluation','nielsen'] },
+    { id: 'rationale',    title: 'Design Rationale',         crumb: 'rationale › decisions',tags: ['rationale','why','decisions','choices'] },
+    { id: 'reflection',   title: 'Reflection & Learning',    crumb: 'reflection',           tags: ['reflection','learning','growth'] },
+    { id: 'future',       title: 'Limitations & Future',     crumb: 'future',               tags: ['limitations','future','improvements','next'] }
+  ];
+
+  /* ---------- Search input ---------- */
+  const input = document.getElementById('searchInput');
+  const pop = document.getElementById('searchPop');
+  const go = document.getElementById('searchGo');
+
+  function matchSections (q) {
+    q = q.trim().toLowerCase();
+    if (!q) return [];
+    return sections.filter(s =>
+      s.title.toLowerCase().includes(q) ||
+      s.tags.some(t => t.includes(q)) ||
+      s.crumb.toLowerCase().includes(q)
+    ).slice(0, 7);
+  }
+  function renderPop (results, q) {
+    if (!q.trim()) { pop.classList.remove('open'); pop.innerHTML = ''; return; }
+    if (results.length === 0) {
+      pop.innerHTML = '<div class="pop-empty">No matching sections — try "problem", "testing", "prototype", or "rescue."</div>';
+      pop.classList.add('open');
+      return;
+    }
+    pop.innerHTML = results.map(r => (
+      '<a class="pop-item" href="#' + r.id + '">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4A7C59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>' +
+        '<div><div style="font-weight:500">' + r.title + '</div><div class="crumb">quickbite.design › ' + r.crumb + '</div></div>' +
+      '</a>'
+    )).join('');
+    pop.classList.add('open');
+  }
+  input.addEventListener('input', (e) => renderPop(matchSections(e.target.value), e.target.value));
+  input.addEventListener('focus', (e) => { if (e.target.value) renderPop(matchSections(e.target.value), e.target.value); });
+  document.addEventListener('click', (e) => {
+    if (!pop.contains(e.target) && e.target !== input) pop.classList.remove('open');
+  });
+  go.addEventListener('click', () => {
+    const r = matchSections(input.value);
+    if (r.length) { window.location.hash = r[0].id; pop.classList.remove('open'); }
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') go.click();
+  });
+
+  /* ---------- Chips ---------- */
+  document.querySelectorAll('.chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.jump;
+      if (id) window.location.hash = id;
+    });
+  });
+
+  /* ---------- Tab active state on scroll ---------- */
+  const tabs = document.querySelectorAll('.tab');
+  const observed = new Map();
+  tabs.forEach(t => observed.set(t.dataset.sec, t));
+  // Map secondary sections to nav buckets
+  const navBucket = {
+    'overview':'overview','problem':'problem',
+    'research':'research','competitive':'research','stakeholders':'research',
+    'features':'design','value':'design','lofi':'design','design':'design',
+    'evaluation':'evaluation','rationale':'rationale',
+    'reflection':'reflection','future':'future','references':'future'
+  };
+  const sectionEls = Object.keys(navBucket).map(id => document.getElementById(id)).filter(Boolean);
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(en => {
+      if (en.isIntersecting) {
+        const bucket = navBucket[en.target.id];
+        tabs.forEach(t => t.classList.toggle('active', t.dataset.sec === bucket));
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
+  sectionEls.forEach(el => obs.observe(el));
+})();
+</script>
+</body>
+</html>
