@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>QuickBite</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@300;400;500;600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#FAF7F2;--white:#FFFFFF;--green:#4A7C59;--green-light:#EAF0E8;--green-mid:#8FB99A;
+  --orange:#C97B2E;--orange-bg:#FEF9EC;--text:#1A1A1A;--text-mid:#4A4A4A;--text-muted:#8A8A8A;
+  --border:#E8E4DD;--red:#C0392B;--red-bg:#FDECEA;--card-shadow:0 2px 12px rgba(0,0,0,.07);
+}
+html,body{height:100%;background:#E8E3DC;display:flex;justify-content:center;align-items:center;font-family:'Inter',sans-serif;}
+#app{width:390px;height:844px;background:var(--bg);border-radius:40px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.25);display:flex;flex-direction:column;}
+.screen{display:none;flex-direction:column;height:100%;overflow:hidden;}
+.screen.active{display:flex;}
+.scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;}
+.scroll-area::-webkit-scrollbar{display:none;}
+.top-header{background:var(--white);padding:14px 16px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid var(--border);}
+.back-btn{width:36px;height:36px;background:var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;font-size:16px;flex-shrink:0;color:var(--text);}
+.hd-title{font-size:18px;font-weight:700;color:var(--text);}
+.hd-sub{font-size:12px;color:var(--text-muted);margin-top:1px;}
+.bottom-nav{background:var(--white);border-top:1px solid var(--border);display:flex;padding:8px 0 16px;flex-shrink:0;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;border:none;background:none;padding:4px 0;}
+.ni{font-size:20px;}.nl{font-size:10px;color:var(--text-muted);font-weight:500;}
+.nav-item.active .nl{color:var(--green);}
+.btn-primary{background:var(--green);color:white;border:none;border-radius:14px;padding:16px;font-size:15px;font-weight:600;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s;}
+.btn-primary:hover{opacity:.9;}
+.btn-primary:disabled{background:var(--green-mid);cursor:default;}
+.btn-outline{background:transparent;color:var(--text);border:1.5px solid var(--border);border-radius:14px;padding:16px;font-size:15px;font-weight:500;cursor:pointer;width:100%;}
+.card{background:var(--white);border-radius:16px;padding:16px;box-shadow:var(--card-shadow);}
+.tag{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;background:var(--border);color:var(--text-mid);}
+.tag.green{background:var(--green-light);color:var(--green);}
+.tag.red{background:var(--red-bg);color:var(--red);}
+.tag.orange{background:var(--orange-bg);color:var(--orange);}
+.chip{padding:9px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;color:var(--text);}
+.chip.selected{background:var(--green);color:white;border-color:var(--green);}
+.option-card{border:1.5px solid var(--border);border-radius:16px;padding:16px;cursor:pointer;background:var(--white);transition:all .15s;}
+.option-card.selected{border-color:var(--green);background:var(--green-light);}
+.filter-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;}
+.filter-row::-webkit-scrollbar{display:none;}
+.filter-chip{white-space:nowrap;padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-size:13px;font-weight:500;cursor:pointer;color:var(--text);transition:all .15s;flex-shrink:0;}
+.filter-chip.active{background:var(--green);color:white;border-color:var(--green);}
+.section-label{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;}
+.expiry-alert{background:var(--orange-bg);border:1.5px solid #F0D49A;border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:10px;}
+.stat-card{background:var(--white);border-radius:16px;padding:20px 16px;text-align:center;box-shadow:var(--card-shadow);}
+.stat-num{font-size:28px;font-weight:700;color:var(--green);}
+.stat-label{font-size:12px;color:var(--text-muted);margin-top:4px;}
+.onboard-prog{display:flex;gap:6px;margin-bottom:6px;}
+.onboard-prog span{height:4px;border-radius:4px;flex:1;background:var(--border);}
+.onboard-prog span.done{background:var(--green);}
+.profile-tabs{display:flex;background:var(--bg);border-radius:14px;padding:4px;gap:2px;}
+.profile-tab{flex:1;text-align:center;padding:10px;font-size:13px;font-weight:500;border-radius:10px;cursor:pointer;color:var(--text-muted);border:none;background:none;}
+.profile-tab.active{background:var(--white);color:var(--text);font-weight:600;border:1.5px solid var(--border);}
+.skill-card{border:1.5px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;background:var(--white);transition:all .15s;}
+.skill-card.selected{border-color:var(--green);background:var(--green-light);}
+.radio-circle{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.skill-card.selected .radio-circle{border-color:var(--green);background:var(--green);}
+.skill-card.selected .radio-circle::after{content:'';width:8px;height:8px;background:white;border-radius:50%;}
+.time-card{border:1.5px solid var(--border);border-radius:14px;padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;background:var(--white);transition:all .15s;flex:1;}
+.time-card.selected{border-color:var(--green);background:var(--green-light);}
+.sticky-btn{padding:12px 16px;background:var(--bg);flex-shrink:0;}
+.search-bar{display:flex;align-items:center;gap:10px;background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;}
+.search-bar input{border:none;background:none;flex:1;font-size:14px;color:var(--text);outline:none;font-family:'Inter',sans-serif;}
+.search-bar input::placeholder{color:var(--text-muted);}
+.welcome-feature{background:var(--white);border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:14px;box-shadow:var(--card-shadow);}
+.wf-icon{width:38px;height:38px;border-radius:12px;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.qa-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
+.qa-icon-wrap{width:52px;height:52px;border-radius:16px;background:var(--white);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:var(--card-shadow);}
+.qa-label{font-size:11px;color:var(--text-muted);font-weight:500;}
+.recipe-card{background:var(--white);border-radius:16px;padding:14px;box-shadow:var(--card-shadow);position:relative;cursor:pointer;display:flex;flex-direction:column;gap:10px;}
+.recipe-card-row{display:flex;align-items:flex-start;gap:12px;}
+.recipe-emoji{width:74px;height:74px;border-radius:12px;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;}
+.recipe-info{flex:1;min-width:0;}
+.recipe-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.recipe-meta{display:flex;gap:10px;font-size:12px;color:var(--text-muted);margin-bottom:6px;align-items:center;}
+.recipe-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.ready-badge{display:inline-block;background:var(--green);color:white;font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px;}
+.why-box{background:var(--green-light);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.6;color:var(--text-mid);}
+.match-pill{display:inline-block;background:var(--green-light);color:var(--green);font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;margin-left:4px;}
+.pantry-item{background:var(--white);border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--card-shadow);}
+.uiu-item{border:1.5px solid var(--green);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;background:var(--white);}
+.uiu-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--green);background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.uiu-dot::after{content:'';width:8px;height:8px;background:white;border-radius:50%;}
+.ing-selected-row{background:var(--bg);border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px;}
+.ing-chip-active{display:inline-flex;align-items:center;gap:6px;background:var(--green);color:white;border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;}
+.ing-chip-active button{background:none;border:none;color:white;cursor:pointer;font-size:14px;padding:0;line-height:1;}
+.ing-detail-row{display:flex;gap:8px;margin-top:10px;}
+.ing-detail-row input{flex:1;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;background:var(--white);outline:none;font-family:'Inter',sans-serif;}
+.cuisine-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.cuisine-card{border:1.5px solid var(--border);border-radius:14px;padding:18px 16px;background:var(--white);cursor:pointer;font-size:14px;font-weight:600;transition:all .15s;}
+.cuisine-card:hover{border-color:var(--green);background:var(--green-light);}
+.chat-input-row{display:flex;gap:10px;padding:12px 16px;background:var(--white);border-top:1px solid var(--border);flex-shrink:0;}
+.chat-input-row input{flex:1;border:1.5px solid var(--border);border-radius:24px;padding:12px 16px;font-size:14px;outline:none;font-family:'Inter',sans-serif;background:var(--bg);}
+.chat-send{width:42px;height:42px;border-radius:50%;background:var(--green);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:white;font-size:16px;}
+.msg-ai,.msg-user{max-width:82%;border-radius:16px;padding:12px 14px;font-size:14px;line-height:1.5;}
+.msg-ai{background:var(--white);color:var(--text);align-self:flex-start;box-shadow:var(--card-shadow);}
+.msg-user{background:var(--green);color:white;align-self:flex-end;}
+.pref-item{background:var(--white);border-radius:14px;padding:16px;box-shadow:var(--card-shadow);}
+.pref-item-header{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.pref-icon{width:32px;height:32px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:15px;}
+.history-item{background:var(--bg);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;font-size:13px;}
+.scan-frame{border:2px dashed var(--border);border-radius:20px;background:#EFECE7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:relative;overflow:hidden;min-height:280px;}
+.sc-corner{position:absolute;width:36px;height:36px;border-color:var(--green);border-style:solid;border-width:0;}
+.sc-tl{top:12px;left:12px;border-top-width:3px;border-left-width:3px;border-radius:6px 0 0 0;}
+.sc-tr{top:12px;right:12px;border-top-width:3px;border-right-width:3px;border-radius:0 6px 0 0;}
+.sc-bl{bottom:12px;left:12px;border-bottom-width:3px;border-left-width:3px;border-radius:0 0 0 6px;}
+.sc-br{bottom:12px;right:12px;border-bottom-width:3px;border-right-width:3px;border-radius:0 0 6px 0;}
+.det-item{background:var(--white);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;box-shadow:var(--card-shadow);}
+.conf-bar{height:4px;border-radius:4px;background:var(--border);flex:1;overflow:hidden;margin-top:5px;}
+.conf-fill{height:100%;border-radius:4px;}
+#modal-overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:100;justify-content:flex-end;flex-direction:column;border-radius:40px;overflow:hidden;}
+#modal-overlay.active{display:flex;}
+.modal-sheet{background:var(--white);border-radius:24px 24px 0 0;padding:20px 20px 36px;}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 20px;}
+.recipe-hero{width:100%;height:180px;background:linear-gradient(135deg,var(--green-light),var(--green-mid));display:flex;align-items:center;justify-content:center;font-size:80px;flex-shrink:0;}
+.saved-card{background:var(--white);border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);}
+.saved-card-top{display:flex;gap:12px;padding:14px;cursor:pointer;}
+.saved-card-bottom{border-top:1px solid var(--border);display:flex;align-items:center;}
+.saved-card-bottom button{flex:1;padding:12px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;color:var(--green);}
+.del-btn{border-left:1px solid var(--border);flex:0 0 52px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;}
+.loading-dots{display:flex;gap:6px;justify-content:center;margin-top:16px;}
+.loading-dots span{width:8px;height:8px;border-radius:50%;background:var(--green);animation:dp 1.4s infinite ease-in-out;}
+.loading-dots span:nth-child(2){animation-delay:.2s;}
+.loading-dots span:nth-child(3){animation-delay:.4s;}
+.loading-dots span:nth-child(4){animation-delay:.6s;}
+@keyframes dp{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+.prog-wrap{background:var(--border);border-radius:10px;height:6px;margin:20px 0 8px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--green);border-radius:10px;width:0;}
+.grocery-item{background:var(--white);border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;box-shadow:var(--card-shadow);}
+.gchk{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+.gchk.chk{background:var(--green);border-color:var(--green);}
+.gchk.chk::after{content:'✓';color:white;font-size:12px;font-weight:700;}
+.step-row{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--green);color:white;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.nutr-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.nutr-cell{background:var(--bg);border-radius:10px;padding:10px 4px;text-align:center;}
+.nutr-val{font-size:15px;font-weight:700;color:var(--green);}
+.nutr-lbl{font-size:10px;color:var(--text-muted);margin-top:2px;}
+.filter-banner{background:var(--green-light);border-radius:10px;padding:8px 12px;font-size:12px;color:var(--green);font-weight:500;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- WELCOME -->
+<div class="screen active" id="s-welcome">
+  <div class="scroll-area" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 24px;gap:26px;">
+    <div style="text-align:center;">
+      <div style="width:80px;height:80px;background:var(--green-light);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 18px;">🍴</div>
+      <h1 style="font-family:'Playfair Display',serif;font-size:34px;font-weight:800;margin-bottom:8px;">QuickBite</h1>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.6;">Cook with what you have.<br>Waste less. Eat well.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;width:100%;">
+      <div class="welcome-feature"><div class="wf-icon">🍴</div><span style="font-size:14px;font-weight:500;">Use what you have</span></div>
+      <div class="welcome-feature"><div class="wf-icon">🌿</div><span style="font-size:14px;font-weight:500;">Rescue expiring food</span></div>
+      <div class="welcome-feature"><div class="wf-icon">✨</div><span style="font-size:14px;font-weight:500;">AI-powered suggestions</span></div>
+    </div>
+    <div style="width:100%;display:flex;flex-direction:column;gap:12px;">
+      <button class="btn-primary" onclick="goTo('s-ob1')">Get Started</button>
+      <div style="display:flex;justify-content:center;gap:6px;margin-top:4px;">
+        <span style="width:22px;height:6px;border-radius:3px;background:var(--green);display:inline-block;"></span>
+        <span style="width:8px;height:6px;border-radius:3px;background:var(--border);display:inline-block;"></span>
+        <span style="width:8px;height:6px;border-radius:3px;background:var(--border);display:inline-block;"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ONBOARD 1 -->
+<div class="screen" id="s-ob1">
+  <div class="scroll-area" style="padding:28px 20px 20px;">
+    <div class="onboard-prog"><span class="done"></span><span></span><span></span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;">
+      <p style="font-size:12px;color:var(--text-muted);">Step 1 of 3</p>
+      <button onclick="goTo('s-ob2')" style="background:none;border:none;font-size:13px;color:var(--text-muted);cursor:pointer;">Skip</button>
+    </div>
+    <h1 style="font-family:'Playfair Display',serif;font-size:26px;font-weight:800;margin-bottom:6px;">Any dietary preferences?</h1>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:22px;">We'll only show recipes that match</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" id="diet-grid">
+      <div class="option-card" onclick="toggleOpt(this)"><div style="font-size:14px;font-weight:600;">Vegetarian</div></div>
+      <div class="option-card" onclick="toggleOpt(this)"><div style="font-size:14px;font-weight:600;">Vegan</div></div>
+      <div class="option-card" onclick="toggleOpt(this)"><div style="font-size:14px;font-weight:600;">Pescatarian</div></div>
+      <div class="option-card" onclick="toggleOpt(this)"><div style="font-size:14px;font-weight:600;">Keto</div></div>
+      <div class="option-card" onclick="toggleOpt(this)"><div style="font-size:14px;font-weight:600;">Paleo</div></div>
+      <div class="option-card" onclick="toggleOpt(this)"><div style="font-size:14px;font-weight:600;">Halal</div></div>
+      <div class="option-card" onclick="toggleOpt(this)"><div style="font-size:14px;font-weight:600;">Kosher</div></div>
+      <div class="option-card" onclick="toggleOpt(this)"><div style="font-size:14px;font-weight:600;">None</div></div>
+    </div>
+  </div>
+  <div class="sticky-btn"><button class="btn-primary" onclick="saveDiet()">Continue →</button></div>
+</div>
+
+<!-- ONBOARD 2 -->
+<div class="screen" id="s-ob2">
+  <div class="scroll-area" style="padding:28px 20px 20px;">
+    <div class="onboard-prog"><span class="done"></span><span class="done"></span><span></span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;">
+      <p style="font-size:12px;color:var(--text-muted);">Step 2 of 3</p>
+      <button onclick="goTo('s-ob3')" style="background:none;border:none;font-size:13px;color:var(--text-muted);cursor:pointer;">Skip</button>
+    </div>
+    <h1 style="font-family:'Playfair Display',serif;font-size:26px;font-weight:800;margin-bottom:6px;">Any allergies?</h1>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:22px;">We'll block unsafe recipes automatically</p>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;">
+      <div class="chip" onclick="toggleChip(this)">Nuts</div>
+      <div class="chip" onclick="toggleChip(this)">Gluten</div>
+      <div class="chip" onclick="toggleChip(this)">Dairy</div>
+      <div class="chip" onclick="toggleChip(this)">Eggs</div>
+      <div class="chip" onclick="toggleChip(this)">Shellfish</div>
+      <div class="chip" onclick="toggleChip(this)">Soy</div>
+      <div class="chip" onclick="toggleChip(this)">None</div>
+    </div>
+  </div>
+  <div style="padding:12px 16px;display:flex;gap:10px;">
+    <button class="btn-outline" onclick="goTo('s-ob1')">← Back</button>
+    <button class="btn-primary" onclick="saveAllergies()">Continue →</button>
+  </div>
+</div>
+
+<!-- ONBOARD 3 -->
+<div class="screen" id="s-ob3">
+  <div class="scroll-area" style="padding:28px 20px 20px;">
+    <div class="onboard-prog"><span class="done"></span><span class="done"></span><span class="done"></span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;">
+      <p style="font-size:12px;color:var(--text-muted);">Step 3 of 3</p>
+      <button onclick="finishOnboard()" style="background:none;border:none;font-size:13px;color:var(--text-muted);cursor:pointer;">Skip</button>
+    </div>
+    <h1 style="font-family:'Playfair Display',serif;font-size:26px;font-weight:800;margin-bottom:6px;">How confident in the kitchen?</h1>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:22px;">We'll tailor recipe instructions for you</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:22px;">
+      <div class="skill-card selected" id="sk-beginner" onclick="selectSkill('beginner')"><div class="radio-circle"></div><div><div style="font-weight:600;">Beginner</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">I follow recipes step by step</div></div></div>
+      <div class="skill-card" id="sk-intermediate" onclick="selectSkill('intermediate')"><div class="radio-circle"></div><div><div style="font-weight:600;">Intermediate</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">I can improvise a bit</div></div></div>
+      <div class="skill-card" id="sk-advanced" onclick="selectSkill('advanced')"><div class="radio-circle"></div><div><div style="font-weight:600;">Advanced</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">I cook without recipes</div></div></div>
+    </div>
+    <p style="font-size:13px;font-weight:600;margin-bottom:12px;">What equipment do you have?</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;" id="equip-chips">
+      <div class="chip selected" onclick="toggleChip(this)">Oven</div>
+      <div class="chip" onclick="toggleChip(this)">Air Fryer</div>
+      <div class="chip" onclick="toggleChip(this)">Instant Pot</div>
+      <div class="chip" onclick="toggleChip(this)">Stovetop Only</div>
+      <div class="chip" onclick="toggleChip(this)">Microwave</div>
+      <div class="chip" onclick="toggleChip(this)">Grill</div>
+    </div>
+  </div>
+  <div style="padding:12px 16px;display:flex;gap:10px;">
+    <button class="btn-outline" onclick="goTo('s-ob2')">← Back</button>
+    <button class="btn-primary" onclick="finishOnboard()">Finish Setup ✓</button>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="screen" id="s-home">
+  <div class="scroll-area" style="padding-bottom:12px;">
+    <div style="background:var(--white);padding:20px 20px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);">
+      <div><p style="font-size:13px;color:var(--text-muted);">Welcome back,</p><h2 style="font-family:'Playfair Display',serif;font-size:24px;font-weight:800;">Maya</h2></div>
+      <button onclick="navTo('profile')" style="width:38px;height:38px;background:var(--green-light);border-radius:50%;border:none;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;">👤</button>
+    </div>
+    <div style="padding:16px;display:flex;flex-direction:column;gap:14px;">
+      <div class="card" style="background:var(--orange-bg);border:1.5px solid #F0D49A;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="goTo('s-useitup')">
+        <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:20px;">🚨</span><div><p style="font-size:13px;font-weight:700;color:var(--orange);">Rescue expiring ingredients</p><p style="font-size:12px;color:var(--text-muted);">Heavy Cream expires tomorrow · $14 savings</p></div></div><span style="color:var(--text-muted);">›</span>
+      </div>
+      <h3 style="font-size:16px;font-weight:700;">How would you like to start?</h3>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="card" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="goTo('s-scan')">
+          <div style="display:flex;align-items:center;gap:12px;"><div style="width:40px;height:40px;background:var(--green-light);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;">📷</div><div><p style="font-weight:600;font-size:14px;">Scan Your Fridge</p><p style="font-size:12px;color:var(--text-muted);">AI identifies ingredients from a photo</p></div></div><span style="color:var(--text-muted);">›</span>
+        </div>
+        <div class="card" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="goTo('s-add')">
+          <div style="display:flex;align-items:center;gap:12px;"><div style="width:40px;height:40px;background:var(--green-light);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;">✏️</div><div><p style="font-weight:600;font-size:14px;">Enter Manually</p><p style="font-size:12px;color:var(--text-muted);">Type or select ingredients</p></div></div><span style="color:var(--text-muted);">›</span>
+        </div>
+      </div>
+      <div><div class="section-label">Quick Actions</div>
+      <div class="qa-grid">
+        <div class="qa-item" onclick="goTo('s-ask')"><div class="qa-icon-wrap">💬</div><span class="qa-label">Ask AI</span></div>
+        <div class="qa-item" onclick="navTo('pantry')"><div class="qa-icon-wrap">📦</div><span class="qa-label">Pantry</span></div>
+        <div class="qa-item" onclick="goTo('s-grocery')"><div class="qa-icon-wrap">🛒</div><span class="qa-label">Grocery</span></div>
+        <div class="qa-item" onclick="openMoodPicker()"><div class="qa-icon-wrap">🎯</div><span class="qa-label">By Mood</span></div>
+      </div></div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="navTo('home')"><span class="ni">🏠</span><span class="nl">Home</span></button>
+    <button class="nav-item" onclick="navTo('search')"><span class="ni">🔍</span><span class="nl">Search</span></button>
+    <button class="nav-item" onclick="navTo('pantry')"><span class="ni">📦</span><span class="nl">Pantry</span></button>
+    <button class="nav-item" onclick="navTo('saved')"><span class="ni">🔖</span><span class="nl">Saved</span></button>
+    <button class="nav-item" onclick="navTo('profile')"><span class="ni">👤</span><span class="nl">Profile</span></button>
+  </div>
+</div>
+
+<!-- SCAN -->
+<div class="screen" id="s-scan">
+  <div class="top-header">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div><div class="hd-title">Scan Your Fridge</div><div class="hd-sub">Photo → instant ingredient detection</div></div>
+  </div>
+  <div class="scroll-area" style="padding:16px;display:flex;flex-direction:column;gap:14px;">
+    <div class="scan-frame" id="scan-frame-ui">
+      <div class="sc-corner sc-tl"></div><div class="sc-corner sc-tr"></div>
+      <div class="sc-corner sc-bl"></div><div class="sc-corner sc-br"></div>
+      <div id="scan-idle-ui" style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+        <div style="width:60px;height:60px;background:rgba(0,0,0,.08);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;">📷</div>
+        <p style="font-size:13px;color:var(--text-muted);">Position fridge contents in frame</p>
+      </div>
+      <div id="scan-loading-ui" style="display:none;flex-direction:column;align-items:center;gap:12px;">
+        <div style="font-size:36px;">🔍</div>
+        <p style="font-size:14px;font-weight:600;color:var(--text);">Scanning ingredients...</p>
+        <div class="loading-dots"><span></span><span></span><span></span><span></span></div>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:13px;color:var(--text-muted);">We'll show you a review screen so you can confirm or correct what was detected</p>
+    <div style="display:flex;gap:10px;">
+      <button class="btn-outline" style="flex:1;" onclick="triggerScan()">⬆️ Upload Photo</button>
+      <button class="btn-primary" style="flex:1;" onclick="triggerDemoScan()">📷 Demo Scan</button>
+    </div>
+  </div>
+  <input type="file" id="scan-file-input" accept="image/*" style="display:none;" onchange="handleScanFile(event)"/>
+</div>
+
+<!-- SCAN REVIEW -->
+<div class="screen" id="s-scan-review">
+  <div class="top-header">
+    <button class="back-btn" onclick="goTo('s-scan')">←</button>
+    <div><div class="hd-title">Detected Ingredients</div><div class="hd-sub">Review and confirm what we found</div></div>
+  </div>
+  <div class="scroll-area" style="padding:16px;display:flex;flex-direction:column;gap:10px;">
+    <div style="background:var(--green-light);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--green);font-weight:500;">
+      ✨ Found <strong id="det-count">5</strong> ingredients. Remove any mistakes below.
+    </div>
+    <div id="detected-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+  <div class="sticky-btn">
+    <button class="btn-primary" onclick="confirmScan()">✓ Confirm &amp; Find Meals</button>
+    <button onclick="goTo('s-add')" style="width:100%;margin-top:8px;background:none;border:none;font-size:13px;color:var(--text-muted);cursor:pointer;padding:6px;">Add ingredients manually instead</button>
+  </div>
+</div>
+
+<!-- ADD INGREDIENTS -->
+<div class="screen" id="s-add">
+  <div class="top-header">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div><div class="hd-title">Add Ingredients</div><div class="hd-sub">Select what you have</div></div>
+  </div>
+  <div class="scroll-area" style="padding:16px;display:flex;flex-direction:column;gap:14px;">
+    <div class="search-bar"><span>🔍</span><input type="text" placeholder="Search ingredients..." id="ing-search" oninput="renderIngSections(this.value)"/></div>
+    <div id="selected-ing-area" style="display:none;">
+      <div class="section-label">SELECTED (<span id="sel-count">0</span>)</div>
+      <div id="selected-ing-list"></div>
+    </div>
+    <div id="ing-sections"></div>
+  </div>
+  <div class="sticky-btn">
+    <button class="btn-primary" id="ing-btn" disabled onclick="goTo('s-confirm')">Continue (<span id="ing-count">0</span> selected)</button>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="screen" id="s-confirm">
+  <div class="top-header">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div><div class="hd-title">Confirm Ingredients</div><div class="hd-sub" id="confirm-sub">0 selected</div></div>
+    <button onclick="goTo('s-add')" style="margin-left:auto;background:var(--bg);border:1.5px solid var(--border);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer;">✏️ Edit</button>
+  </div>
+  <div class="scroll-area" style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;"><span>👨‍🍳</span><span style="font-size:15px;font-weight:700;">Your Ingredients</span></div>
+      <div id="confirm-ing-list"></div>
+    </div>
+    <div class="card" style="background:var(--green-light);border:none;" id="confirm-match-card">
+      <p style="font-size:14px;font-weight:700;margin-bottom:10px;">Recipe Match Preview</p>
+      <div id="confirm-match-body"></div>
+    </div>
+    <div id="confirm-filter-note" style="display:none;background:var(--green-light);border-radius:14px;padding:12px 14px;font-size:13px;color:var(--green);font-weight:500;"></div>
+  </div>
+  <div class="sticky-btn"><button class="btn-primary" onclick="startAI()">✨ Get Meal Suggestions</button></div>
+</div>
+
+<!-- AI LOADING -->
+<div class="screen" id="s-loading" style="justify-content:center;align-items:center;">
+  <div style="background:var(--green-light);border-radius:28px;padding:40px 36px;text-align:center;margin:20px;">
+    <div style="width:70px;height:70px;background:rgba(74,124,89,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px;">✨</div>
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;">Finding your best matches</h2>
+    <p style="font-size:14px;color:var(--text-muted);" id="load-msg">Checking your pantry...</p>
+    <div class="prog-wrap"><div class="prog-fill" id="prog-fill"></div></div>
+    <p style="font-size:12px;color:var(--text-muted);" id="prog-pct">0%</p>
+    <div class="loading-dots"><span></span><span></span><span></span><span></span></div>
+  </div>
+</div>
+
+<!-- MEAL SUGGESTIONS -->
+<div class="screen" id="s-suggestions">
+  <div class="top-header">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div><div class="hd-title">Meal Suggestions</div><div class="hd-sub" id="sugg-sub">Loading...</div></div>
+  </div>
+  <div style="padding:10px 16px 6px;background:var(--bg);flex-shrink:0;">
+    <div id="filter-banner-wrap" style="margin-bottom:6px;"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;" id="ing-tags-row"></div>
+    <div class="filter-row" id="filter-row">
+      <div class="filter-chip active" onclick="filterSugg(this,'all')">All</div>
+      <div class="filter-chip" onclick="filterSugg(this,'quick')">Under 20 min</div>
+      <div class="filter-chip" onclick="filterSugg(this,'veg')">Vegetarian</div>
+      <div class="filter-chip" onclick="filterSugg(this,'protein')">High Protein</div>
+      <div class="filter-chip" onclick="filterSugg(this,'ready')">Ready Now</div>
+    </div>
+  </div>
+  <div class="scroll-area" style="padding:10px 16px;display:flex;flex-direction:column;gap:12px;" id="suggestions-list"></div>
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="navTo('home')"><span class="ni">🏠</span><span class="nl">Home</span></button>
+    <button class="nav-item" onclick="navTo('search')"><span class="ni">🔍</span><span class="nl">Search</span></button>
+    <button class="nav-item" onclick="navTo('pantry')"><span class="ni">📦</span><span class="nl">Pantry</span></button>
+    <button class="nav-item" onclick="navTo('saved')"><span class="ni">🔖</span><span class="nl">Saved</span></button>
+    <button class="nav-item" onclick="navTo('profile')"><span class="ni">👤</span><span class="nl">Profile</span></button>
+  </div>
+</div>
+
+<!-- RECIPE DETAIL -->
+<div class="screen" id="s-recipe">
+  <div style="position:relative;flex-shrink:0;">
+    <div class="recipe-hero" id="recipe-hero">🍽️</div>
+    <button class="back-btn" onclick="goBack()" style="position:absolute;top:14px;left:14px;background:rgba(255,255,255,.9);">←</button>
+    <button id="recipe-bm-btn" onclick="toggleSaveRecipe()" style="position:absolute;top:14px;right:14px;background:white;width:auto;padding:6px 14px;border-radius:20px;border:none;cursor:pointer;font-size:13px;font-weight:700;display:flex;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(0,0,0,.15);" id="recipe-bm-btn"><span id="recipe-bm-icon">🔖</span><span id="recipe-bm-label">Save</span></button>
+  </div>
+  <div class="scroll-area" style="padding:16px;display:flex;flex-direction:column;gap:14px;" id="recipe-content"></div>
+  <div class="sticky-btn"><button class="btn-primary" onclick="startCooking()">🍳 Start Cooking Mode</button></div>
+</div>
+
+<!-- COOKING MODE -->
+<div class="screen" id="s-cooking">
+  <div style="background:var(--green);padding:16px 16px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;">
+    <button class="back-btn" onclick="exitCookingToRecipe()" style="background:rgba(255,255,255,.2);color:white;">←</button>
+    <div style="flex:1;"><div style="font-size:16px;font-weight:700;color:white;" id="cook-recipe-name">Recipe</div><div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;" id="cook-step-label">Step 1 of 5</div></div>
+    <button onclick="exitCookingToRecipe()" style="background:rgba(255,255,255,.2);border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;color:white;cursor:pointer;">Exit</button>
+  </div>
+  <!-- progress bar -->
+  <div style="height:4px;background:rgba(74,124,89,.2);flex-shrink:0;"><div id="cook-progress-bar" style="height:100%;background:var(--green);transition:width .3s;"></div></div>
+  <div class="scroll-area" style="padding:20px 16px;display:flex;flex-direction:column;gap:16px;" id="cook-scroll-area">
+    <!-- step card -->
+    <div style="background:var(--green-light);border-radius:20px;padding:24px 20px;text-align:center;" id="cook-step-card">
+      <div style="width:52px;height:52px;border-radius:50%;background:var(--green);color:white;font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;" id="cook-step-num">1</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:10px;" id="cook-step-title">Step title</div>
+      <div style="font-size:14px;line-height:1.7;color:var(--text-mid);" id="cook-step-body">Step instructions go here.</div>
+    </div>
+    <!-- ingredient check -->
+    <div class="card" id="cook-ing-check" style="display:none;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;">Ingredients for this step</div>
+      <div id="cook-ing-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+    <!-- tip card -->
+    <div id="cook-tip" style="display:none;background:var(--orange-bg);border:1.5px solid #F0D49A;border-radius:14px;padding:14px 16px;font-size:13px;color:var(--orange);"></div>
+    <!-- completion card (hidden until done) -->
+    <div id="cook-complete-card" style="display:none;background:var(--green);border-radius:20px;padding:28px 20px;text-align:center;">
+      <div style="font-size:52px;margin-bottom:12px;" id="cook-complete-emoji">🍝</div>
+      <div style="font-size:20px;font-weight:800;color:white;margin-bottom:6px;">You did it! 🎉</div>
+      <div style="font-size:14px;color:rgba(255,255,255,.8);margin-bottom:20px;" id="cook-complete-name">Recipe name</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button onclick="navTo('home')" style="background:white;color:var(--green);border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;">🏠 Back to Home</button>
+        <button onclick="exitCookingToRecipe()" style="background:rgba(255,255,255,.15);color:white;border:1.5px solid rgba(255,255,255,.3);border-radius:14px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;">← Back to Recipe</button>
+      </div>
+    </div>
+  </div>
+  <!-- nav buttons -->
+  <div style="padding:12px 16px;background:var(--bg);display:flex;gap:10px;flex-shrink:0;" id="cook-nav-btns">
+    <button id="cook-prev-btn" onclick="cookStep(-1)" class="btn-outline" style="flex:1;padding:14px;">← Prev</button>
+    <button id="cook-next-btn" onclick="cookStep(1)" class="btn-primary" style="flex:2;">Next Step →</button>
+  </div>
+</div>
+
+<!-- SAVED -->
+<div class="screen" id="s-saved">
+  <div class="top-header">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div style="display:flex;align-items:center;gap:8px;"><span>🔖</span><div><div class="hd-title">Saved Recipes</div><div class="hd-sub" id="saved-sub">0 recipes</div></div></div>
+  </div>
+  <div class="scroll-area" style="padding:12px 16px;display:flex;flex-direction:column;gap:12px;" id="saved-list"></div>
+  <div class="bottom-nav">
+    <button class="nav-item" onclick="navTo('home')"><span class="ni">🏠</span><span class="nl">Home</span></button>
+    <button class="nav-item" onclick="navTo('search')"><span class="ni">🔍</span><span class="nl">Search</span></button>
+    <button class="nav-item" onclick="navTo('pantry')"><span class="ni">📦</span><span class="nl">Pantry</span></button>
+    <button class="nav-item active" onclick="navTo('saved')"><span class="ni">🔖</span><span class="nl">Saved</span></button>
+    <button class="nav-item" onclick="navTo('profile')"><span class="ni">👤</span><span class="nl">Profile</span></button>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="screen" id="s-search">
+  <div class="top-header">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div><div class="hd-title">Search Recipes</div></div>
+  </div>
+  <div style="padding:12px 16px;background:var(--white);flex-shrink:0;border-bottom:1px solid var(--border);">
+    <div class="search-bar"><span>🔍</span><input type="text" placeholder="Search recipes, ingredients, cuisines..." id="search-input" oninput="doSearch(this.value)"/></div>
+  </div>
+  <div class="scroll-area" style="padding:16px;display:flex;flex-direction:column;gap:16px;" id="search-content">
+    <div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;"><span style="color:var(--green);">📈</span><span style="font-size:14px;font-weight:600;">Trending</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <div class="chip" onclick="searchChip(this)">quick dinner</div>
+        <div class="chip" onclick="searchChip(this)">meal prep</div>
+        <div class="chip" onclick="searchChip(this)">one pot</div>
+        <div class="chip" onclick="searchChip(this)">vegetarian</div>
+        <div class="chip" onclick="searchChip(this)">high protein</div>
+      </div>
+    </div>
+    <div>
+      <p style="font-size:14px;font-weight:600;margin-bottom:12px;">Browse by Cuisine</p>
+      <div class="cuisine-grid">
+        <div class="cuisine-card" onclick="searchChip(this)">🇮🇹 Italian</div>
+        <div class="cuisine-card" onclick="searchChip(this)">🥢 Asian</div>
+        <div class="cuisine-card" onclick="searchChip(this)">🌮 Mexican</div>
+        <div class="cuisine-card" onclick="searchChip(this)">🍔 American</div>
+        <div class="cuisine-card" onclick="searchChip(this)">🫒 Mediterranean</div>
+        <div class="cuisine-card" onclick="searchChip(this)">🍛 Indian</div>
+      </div>
+    </div>
+  </div>
+  <div id="search-results" style="display:none;padding:16px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px;"></div>
+  <div class="bottom-nav">
+    <button class="nav-item" onclick="navTo('home')"><span class="ni">🏠</span><span class="nl">Home</span></button>
+    <button class="nav-item active" onclick="navTo('search')"><span class="ni">🔍</span><span class="nl">Search</span></button>
+    <button class="nav-item" onclick="navTo('pantry')"><span class="ni">📦</span><span class="nl">Pantry</span></button>
+    <button class="nav-item" onclick="navTo('saved')"><span class="ni">🔖</span><span class="nl">Saved</span></button>
+    <button class="nav-item" onclick="navTo('profile')"><span class="ni">👤</span><span class="nl">Profile</span></button>
+  </div>
+</div>
+
+<!-- ASK AI -->
+<div class="screen" id="s-ask">
+  <div class="top-header">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div style="display:flex;align-items:center;gap:8px;"><span>✨</span><div><div class="hd-title">Ask QuickBite</div><div class="hd-sub">AI-powered meal assistant</div></div></div>
+  </div>
+  <div class="scroll-area" id="chat-scroll">
+    <div>
+      <div style="text-align:center;padding:22px 20px 14px;">
+        <div style="width:58px;height:58px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 10px;">✨</div>
+        <h3 style="font-size:17px;font-weight:700;margin-bottom:6px;">How can I help you today?</h3>
+        <p style="font-size:13px;color:var(--text-muted);">Ask me anything about meals, recipes, or ingredients</p>
+      </div>
+      <div style="padding:0 16px;display:flex;flex-direction:column;gap:8px;" id="chat-prompts">
+        <div class="card" style="cursor:pointer;font-size:14px;" onclick="sendPrompt('What can I make with leftover rice?')">What can I make with leftover rice?</div>
+        <div class="card" style="cursor:pointer;font-size:14px;" onclick="sendPrompt('Suggest a quick dinner for two')">Suggest a quick dinner for two</div>
+        <div class="card" style="cursor:pointer;font-size:14px;" onclick="sendPrompt('I need a vegetarian option')">I need a vegetarian option</div>
+        <div class="card" style="cursor:pointer;font-size:14px;" onclick="sendPrompt('Something healthy and filling')">Something healthy and filling</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;padding:16px;" id="chat-messages"></div>
+    </div>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" placeholder="Ask about meals, ingredients..." id="chat-input" onkeydown="if(event.key==='Enter')sendChat()"/>
+    <button class="chat-send" onclick="sendChat()">➤</button>
+  </div>
+</div>
+
+<!-- MOOD -->
+<div class="screen" id="s-mood">
+  <div class="top-header">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div><div class="hd-title">How are you feeling?</div><div class="hd-sub">Help us find the perfect meal</div></div>
+  </div>
+  <div class="scroll-area" style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+    <p class="section-label" style="margin-bottom:0;">Energy Level</p>
+    <div style="border:1.5px solid var(--green);border-radius:16px;padding:16px;display:flex;align-items:center;gap:14px;background:var(--green-light);cursor:pointer;" id="mood-high" onclick="selectMood('high')">
+      <div style="width:42px;height:42px;border-radius:50%;background:rgba(74,124,89,.15);display:flex;align-items:center;justify-content:center;font-size:20px;">⚡</div>
+      <div><div style="font-size:15px;font-weight:600;">High Energy</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Ready to cook something elaborate</div></div>
+    </div>
+    <div style="border:1.5px solid var(--border);border-radius:16px;padding:16px;display:flex;align-items:center;gap:14px;background:var(--white);cursor:pointer;" id="mood-medium" onclick="selectMood('medium')">
+      <div style="width:42px;height:42px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:20px;">🔋</div>
+      <div><div style="font-size:15px;font-weight:600;">Medium</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Can handle moderate effort</div></div>
+    </div>
+    <div style="border:1.5px solid var(--border);border-radius:16px;padding:16px;display:flex;align-items:center;gap:14px;background:var(--white);cursor:pointer;" id="mood-low" onclick="selectMood('low')">
+      <div style="width:42px;height:42px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:20px;">🪫</div>
+      <div><div style="font-size:15px;font-weight:600;">Low Energy</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Want something simple</div></div>
+    </div>
+    <p class="section-label" style="margin-top:8px;margin-bottom:0;">Time Available</p>
+    <div style="display:flex;gap:10px;">
+      <div class="time-card" id="time-quick" onclick="selTime('quick')"><span style="font-size:22px;">⚡</span><span style="font-size:13px;font-weight:600;">Quick</span><span style="font-size:11px;color:var(--text-muted);">Under 15 min</span></div>
+      <div class="time-card selected" id="time-medium" onclick="selTime('medium')"><span style="font-size:22px;">⏱</span><span style="font-size:13px;font-weight:600;">Medium</span><span style="font-size:11px;color:var(--text-muted);">15-30 min</span></div>
+      <div class="time-card" id="time-have" onclick="selTime('have')"><span style="font-size:22px;">⏳</span><span style="font-size:13px;font-weight:600;">Have Time</span><span style="font-size:11px;color:var(--text-muted);">30+ min</span></div>
+    </div>
+  </div>
+  <div class="sticky-btn"><button class="btn-primary" onclick="startAI()">✨ Find My Perfect Meal</button></div>
+</div>
+
+<!-- PANTRY -->
+<div class="screen" id="s-pantry">
+  <div style="background:var(--white);padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0;">
+    <div style="display:flex;align-items:center;gap:10px;"><button class="back-btn" onclick="goBack()">←</button><span style="font-size:18px;font-weight:700;">📦 My Pantry</span></div>
+    <button class="btn-primary" style="width:auto;padding:8px 16px;font-size:13px;border-radius:20px;" onclick="openAddPantry()">+ Add</button>
+  </div>
+  <div style="padding:10px 16px;background:var(--white);border-bottom:1px solid var(--border);flex-shrink:0;">
+    <div class="search-bar"><span>🔍</span><input type="text" placeholder="Search pantry..." oninput="filterPantry(this.value)"/></div>
+  </div>
+  <div class="scroll-area" style="padding:12px 16px;display:flex;flex-direction:column;gap:10px;">
+    <div class="expiry-alert" style="cursor:pointer;" onclick="goTo('s-useitup')">
+      <span style="font-size:18px;">⚠️</span>
+      <div><div style="font-size:14px;font-weight:600;color:var(--orange);">3 items expiring soon</div><div style="font-size:12px;color:var(--orange);opacity:.8;margin-top:2px;">Tap to rescue them</div></div>
+    </div>
+    <div class="filter-row">
+      <div class="filter-chip active" onclick="filterCat(this,'all')">All</div>
+      <div class="filter-chip" onclick="filterCat(this,'Dairy')">Dairy</div>
+      <div class="filter-chip" onclick="filterCat(this,'Meat')">Meat</div>
+      <div class="filter-chip" onclick="filterCat(this,'Produce')">Produce</div>
+      <div class="filter-chip" onclick="filterCat(this,'Grains')">Grains</div>
+      <div class="filter-chip" onclick="filterCat(this,'Oils')">Oils</div>
+    </div>
+    <div id="pantry-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item" onclick="navTo('home')"><span class="ni">🏠</span><span class="nl">Home</span></button>
+    <button class="nav-item" onclick="navTo('search')"><span class="ni">🔍</span><span class="nl">Search</span></button>
+    <button class="nav-item active" onclick="navTo('pantry')"><span class="ni">📦</span><span class="nl">Pantry</span></button>
+    <button class="nav-item" onclick="navTo('saved')"><span class="ni">🔖</span><span class="nl">Saved</span></button>
+    <button class="nav-item" onclick="navTo('profile')"><span class="ni">👤</span><span class="nl">Profile</span></button>
+  </div>
+</div>
+
+<!-- USE IT UP -->
+<div class="screen" id="s-useitup">
+  <div style="background:var(--orange-bg);border-bottom:1.5px solid #F0D49A;padding:14px 16px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0;">
+    <button class="back-btn" onclick="goBack()" style="background:rgba(255,255,255,.6);">←</button>
+    <span style="font-size:18px;">🛟</span>
+    <div><div style="font-size:17px;font-weight:700;">Rescue These Ingredients</div><div style="font-size:12px;color:var(--orange);">Save food before it goes to waste</div></div>
+  </div>
+  <div class="scroll-area" style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+    <div style="background:var(--orange-bg);border:1.5px solid #F0D49A;border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:space-between;">
+      <div><div style="font-size:14px;font-weight:700;color:var(--orange);">💰 Using these saves ~$14</div><div style="font-size:12px;color:var(--orange);margin-top:2px;">vs throwing them away</div></div><span style="font-size:28px;">🌍</span>
+    </div>
+    <div id="uiu-items" style="display:flex;flex-direction:column;gap:8px;"></div>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:4px;"><span style="font-size:16px;">✨</span><span style="font-size:14px;font-weight:700;">Recipes That Use These</span></div>
+    <div id="uiu-recipes" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+  <div class="sticky-btn"><button class="btn-primary" id="uiu-find-btn" onclick="uiuFindRecipes()">🛟 Find Recipes With These</button></div>
+</div>
+
+<!-- GROCERY -->
+<div class="screen" id="s-grocery">
+  <div class="top-header">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div><div class="hd-title">🛒 Grocery List</div><div class="hd-sub">Missing ingredients from saved recipes</div></div>
+    <button onclick="clearGrocery()" style="margin-left:auto;background:none;border:none;font-size:13px;color:var(--text-muted);cursor:pointer;">Clear</button>
+  </div>
+  <div class="scroll-area" style="padding:16px;display:flex;flex-direction:column;gap:10px;" id="grocery-list"></div>
+  <div class="sticky-btn"><button class="btn-primary" onclick="openAddPantryFromGrocery()">+ Add to Pantry</button></div>
+  <div class="bottom-nav">
+    <button class="nav-item" onclick="navTo('home')"><span class="ni">🏠</span><span class="nl">Home</span></button>
+    <button class="nav-item" onclick="navTo('search')"><span class="ni">🔍</span><span class="nl">Search</span></button>
+    <button class="nav-item" onclick="navTo('pantry')"><span class="ni">📦</span><span class="nl">Pantry</span></button>
+    <button class="nav-item active" onclick="navTo('saved')"><span class="ni">🔖</span><span class="nl">Saved</span></button>
+    <button class="nav-item" onclick="navTo('profile')"><span class="ni">👤</span><span class="nl">Profile</span></button>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="screen" id="s-profile">
+  <div style="background:var(--white);padding:14px 16px 0;border-bottom:1px solid var(--border);flex-shrink:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:48px;height:48px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;">👤</div>
+        <div><div style="font-size:17px;font-weight:700;">Maya</div><div style="font-size:12px;color:var(--text-muted);">QuickBite member since 2024</div></div>
+      </div>
+      <button style="width:36px;height:36px;background:var(--bg);border-radius:50%;border:none;cursor:pointer;font-size:16px;">⚙️</button>
+    </div>
+    <div class="profile-tabs">
+      <button class="profile-tab active" id="ptab-prefs" onclick="switchTab('prefs')">Preferences</button>
+      <button class="profile-tab" id="ptab-history" onclick="switchTab('history')">History</button>
+      <button class="profile-tab" id="ptab-stats" onclick="switchTab('stats')">Stats</button>
+    </div>
+  </div>
+  <div class="scroll-area" style="padding:16px;display:flex;flex-direction:column;gap:10px;" id="profile-content"></div>
+  <div class="bottom-nav">
+    <button class="nav-item" onclick="navTo('home')"><span class="ni">🏠</span><span class="nl">Home</span></button>
+    <button class="nav-item" onclick="navTo('search')"><span class="ni">🔍</span><span class="nl">Search</span></button>
+    <button class="nav-item" onclick="navTo('pantry')"><span class="ni">📦</span><span class="nl">Pantry</span></button>
+    <button class="nav-item" onclick="navTo('saved')"><span class="ni">🔖</span><span class="nl">Saved</span></button>
+    <button class="nav-item active" onclick="navTo('profile')"><span class="ni">👤</span><span class="nl">Profile</span></button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal-overlay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <h3 style="font-size:17px;font-weight:700;margin-bottom:16px;">Add Pantry Item</h3>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <input type="text" placeholder="Ingredient name" id="m-name" style="border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;font-family:'Inter',sans-serif;"/>
+      <div style="display:flex;gap:10px;">
+        <input type="text" placeholder="Qty (e.g. 200g)" id="m-qty" style="flex:1;border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;font-family:'Inter',sans-serif;"/>
+        <input type="number" placeholder="Expires (days)" id="m-exp" style="flex:1;border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;font-family:'Inter',sans-serif;"/>
+      </div>
+      <select id="m-cat" style="border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;font-family:'Inter',sans-serif;background:var(--white);">
+        <option>Dairy</option><option>Meat</option><option>Produce</option><option>Grains</option><option>Oils</option><option>Canned</option><option>Other</option>
+      </select>
+      <button class="btn-primary" onclick="addPantryItem()">Add to Pantry</button>
+      <button class="btn-outline" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+<script>
+const RECIPES=[
+  {id:1,name:'Creamy Chicken Broccoli Pasta',time:'20 min',diff:'Easy',emoji:'🍝',tags:['High Protein','Under 30 min'],dietTags:[],allergens:['Dairy','Gluten'],ingredients:['Chicken Breast','Pasta','Heavy Cream','Garlic'],missing:['Broccoli'],cuisine:'Italian',steps:['Boil salted water. Cook pasta until al dente (8–10 min). Reserve ½ cup pasta water before draining.','Season 2 chicken breasts with salt and pepper. Sear in olive oil over medium-high heat, 5–6 min per side. Slice thinly.','In the same pan, sauté 3 cloves minced garlic for 30 sec until fragrant.','Pour in 1 cup heavy cream. Simmer 2–3 min until slightly thickened.','Add drained pasta and sliced chicken. Toss to coat, adding pasta water if needed.','Fold in broccoli or swap spinach. Cook 2 more min. Season to taste and serve hot.'],subs:['Broccoli → Spinach, peas, or mushrooms (already in your pantry!)','Heavy Cream → Half-and-half or coconut cream for lighter version','Pasta → Rice or zucchini noodles if gluten-free'],nutrition:{cal:520,protein:38,carbs:46,fat:18}},
+  {id:2,name:'Spinach & Mushroom Omelette',time:'12 min',diff:'Easy',emoji:'🍳',tags:['Vegetarian','High Protein','Under 30 min'],dietTags:['Vegetarian'],allergens:['Eggs','Dairy'],ingredients:['Eggs','Spinach','Mushrooms','Butter'],missing:[],cuisine:'American',steps:['Slice 4 oz mushrooms. Wash and roughly chop a large handful of spinach.','Melt 1 tsp butter over medium heat. Sauté mushrooms 3 min until golden. Add spinach and wilt ~1 min. Season and set aside.','Whisk 3 eggs with a pinch of salt and 1 tbsp water until fully combined.','Add another tsp butter to pan. Pour in eggs. Cook undisturbed until edges are just set, ~1 min.','Add filling to one half. Fold omelette over and slide onto plate. Serve immediately.'],subs:['Mushrooms → Zucchini, peppers, or tomatoes','Spinach → Any leafy green or leftover veg','Butter → Olive oil or cooking spray'],nutrition:{cal:280,protein:22,carbs:6,fat:19}},
+  {id:3,name:'Garlic Butter Chicken & Rice',time:'25 min',diff:'Easy',emoji:'🍚',tags:['High Protein','Under 30 min'],dietTags:[],allergens:['Dairy'],ingredients:['Chicken Breast','Rice','Garlic','Olive Oil'],missing:[],cuisine:'American',steps:['Rinse 1 cup of rice and cook per package instructions. Season with salt.','Season 2 chicken breasts with garlic powder, paprika, salt, and pepper.','Heat 2 tbsp olive oil in a pan over medium-high. Cook chicken 5–6 min per side until golden. Rest 5 min then slice.','In same pan, melt 2 tbsp butter. Add 4 minced garlic cloves, cook 30 sec.','Return chicken to pan and toss in garlic butter. Serve over rice with pan juices.'],subs:['Chicken → Shrimp (cook 2 min/side) or tofu','Rice → Pasta, quinoa, or cauliflower rice'],nutrition:{cal:480,protein:42,carbs:38,fat:16}},
+  {id:4,name:'Creamy Mushroom Pasta',time:'20 min',diff:'Easy',emoji:'🍄',tags:['Vegetarian','Under 30 min'],dietTags:['Vegetarian'],allergens:['Dairy','Gluten'],ingredients:['Pasta','Mushrooms','Heavy Cream','Garlic'],missing:[],cuisine:'Italian',steps:['Cook pasta in well-salted boiling water until al dente. Reserve 1 cup pasta water.','Slice 8 oz mushrooms. Heat 2 tbsp olive oil over HIGH heat. Sear mushrooms in single layer — no stirring for 2 min to get a golden crust.','Reduce heat. Add 3 cloves minced garlic, cook 30 sec.','Pour in ¾ cup heavy cream. Simmer 2 min. Add a handful of spinach if available.','Toss with drained pasta. Add pasta water to reach desired consistency. Season well.'],subs:['Heavy Cream → Cashew cream or oat milk + 1 tsp flour','Mushrooms → Zucchini, eggplant, or roasted peppers'],nutrition:{cal:440,protein:14,carbs:56,fat:19}},
+  {id:5,name:'Vegetable Fried Rice',time:'18 min',diff:'Easy',emoji:'🥡',tags:['Vegetarian','Under 30 min'],dietTags:['Vegetarian','Vegan'],allergens:['Eggs','Soy','Gluten'],ingredients:['Rice','Garlic','Olive Oil','Spinach'],missing:['Soy Sauce'],cuisine:'Asian',steps:['Use day-old rice if possible. If fresh, spread on a tray and chill 10 min.','Heat 2 tbsp oil in a wok over high heat. Add 2 cloves minced garlic, cook 20 sec.','Push to side. Scramble 2 eggs in center, then break up and mix throughout.','Add rice. Press against hot pan to get slight crisp, ~3 min.','Add 2 tbsp soy sauce, dash of sesame oil, and any veg. Stir-fry 2 more min. Serve hot.'],subs:['Soy Sauce → Coconut aminos or a pinch of salt','Eggs → Firm tofu (scrambled in pan) for vegan','Any veg works: spinach, frozen peas, corn, carrots'],nutrition:{cal:360,protein:12,carbs:58,fat:10}},
+  {id:6,name:'Quick Chicken Stir-Fry',time:'15 min',diff:'Easy',emoji:'🥢',tags:['High Protein','Under 30 min'],dietTags:[],allergens:['Soy','Gluten'],ingredients:['Chicken Breast','Garlic','Olive Oil','Spinach'],missing:['Soy Sauce','Bell Pepper'],cuisine:'Asian',steps:['Slice chicken breast thinly against the grain. Season with salt and pepper.','Heat oil in a wok over very high heat until smoking. Add chicken in one layer, cook 2 min without touching.','Add garlic and any other veg. Stir-fry 2 min.','Sauce: mix 2 tbsp soy sauce, 1 tsp sesame oil, 1 tsp sugar. Pour over and toss.','Cook 1 more minute. Serve over rice.'],subs:['Soy Sauce → Coconut aminos or teriyaki','Bell Pepper → Any veg in your fridge','Chicken → Beef or tofu'],nutrition:{cal:310,protein:35,carbs:12,fat:14}}
+];
+const ING_DB={Proteins:['Chicken Breast','Beef','Pork','Salmon','Shrimp','Tofu','Eggs','Ground Turkey'],Vegetables:['Tomatoes','Onion','Garlic','Bell Pepper','Spinach','Broccoli','Carrots','Lettuce','Mushrooms','Zucchini'],Dairy:['Cheese','Milk','Butter','Yogurt','Heavy Cream'],Grains:['Rice','Pasta','Bread','Oats','Quinoa'],Pantry:['Olive Oil','Soy Sauce','Tomato Sauce','Garlic Powder','Flour','Sugar','Honey']};
+const S={
+  cur:'s-welcome',hist:[],selIng:[],
+  detected:[{n:'Chicken Breast',c:92},{n:'Spinach',c:88},{n:'Milk',c:81},{n:'Tomatoes',c:76},{n:'Eggs',c:70}],
+  removedDet:new Set(),
+  pantry:[
+    {name:'Olive Oil',qty:'16 oz',cat:'Oils',exp:null},
+    {name:'Pasta',qty:'2 lbs',cat:'Grains',exp:null},
+    {name:'Rice',qty:'5 lbs',cat:'Grains',exp:null},
+    {name:'Chicken Breast',qty:'2 pieces',cat:'Meat',exp:3},
+    {name:'Spinach',qty:'1 bag',cat:'Produce',exp:2},
+    {name:'Heavy Cream',qty:'1 cup',cat:'Dairy',exp:1},
+    {name:'Mushrooms',qty:'8 oz',cat:'Produce',exp:3},
+    {name:'Garlic',qty:'1 bulb',cat:'Produce',exp:14},
+    {name:'Eggs',qty:'6',cat:'Dairy',exp:21},
+  ],
+  grocery:[
+    {name:'Broccoli',recipe:'Creamy Chicken Broccoli Pasta',chk:false},
+    {name:'Soy Sauce',recipe:'Vegetable Fried Rice',chk:false},
+    {name:'Bell Pepper',recipe:'Quick Chicken Stir-Fry',chk:false},
+  ],
+  saved:[],cooked:[],diet:[],allergies:[],skill:'beginner',equip:['Oven'],
+  chat:[],curRecipe:null,profileTab:'prefs',
+  pantryFilter:'',pantryCat:'all',
+  currentCookStep:0,
+  searchHistory:[]
+};
+
+// NAV
+function goTo(id){
+  if(!document.getElementById(id)||id===S.cur)return;
+  S.hist.push(S.cur);
+  document.getElementById(S.cur).classList.remove('active');
+  document.getElementById(id).classList.add('active');
+  S.cur=id; onEnter(id);
+}
+function goBack(){
+  if(!S.hist.length)return;
+  const p=S.hist.pop();
+  document.getElementById(S.cur).classList.remove('active');
+  document.getElementById(p).classList.add('active');
+  S.cur=p; onEnter(p);
+}
+function navTo(t){
+  const m={home:'s-home',search:'s-search',pantry:'s-pantry',saved:'s-saved',profile:'s-profile'};
+  if(m[t]){S.hist=[];goTo(m[t]);}
+}
+function onEnter(id){
+  if(id==='s-add'){renderIngSections();renderSelPanel();updateIngUI();}
+  if(id==='s-confirm')renderConfirm();
+  if(id==='s-suggestions')renderSuggestions();
+  if(id==='s-pantry')renderPantry();
+  if(id==='s-saved')renderSaved();
+  if(id==='s-profile')renderProfile();
+  if(id==='s-useitup')renderUIU();
+  if(id==='s-grocery')renderGrocery();
+  if(id==='s-scan-review')renderScanReview();
+}
+
+// ONBOARDING
+function toggleOpt(el){document.querySelectorAll('#diet-grid .option-card').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');}
+function toggleChip(el){el.classList.toggle('selected');}
+function saveDiet(){const s=document.querySelector('#diet-grid .option-card.selected');S.diet=s?[s.querySelector('div').textContent]:[];goTo('s-ob2');}
+function saveAllergies(){S.allergies=[...document.querySelectorAll('#s-ob2 .chip.selected')].map(e=>e.textContent.trim());goTo('s-ob3');}
+function selectSkill(s){S.skill=s;['beginner','intermediate','advanced'].forEach(k=>document.getElementById('sk-'+k).classList.remove('selected'));document.getElementById('sk-'+s).classList.add('selected');}
+function finishOnboard(){S.equip=[...document.querySelectorAll('#equip-chips .chip.selected')].map(e=>e.textContent.trim());goTo('s-home');}
+
+// SCORING
+function scoreR(r){
+  const avail=[...S.selIng.map(i=>i.name.toLowerCase()),...S.pantry.map(i=>i.name.toLowerCase())];
+  const matched=r.ingredients.filter(i=>avail.some(a=>a===i.toLowerCase()||a.includes(i.toLowerCase())||i.toLowerCase().includes(a)));
+  const missing=r.ingredients.filter(i=>!avail.some(a=>a===i.toLowerCase()||a.includes(i.toLowerCase())||i.toLowerCase().includes(a)));
+  const expNames=S.pantry.filter(p=>p.exp&&p.exp<=3).map(p=>p.name.toLowerCase());
+  const usesExp=r.ingredients.filter(i=>expNames.some(e=>e===i.toLowerCase()));
+  const pct=Math.round(matched.length/r.ingredients.length*100);
+  return{matched,missing,usesExp,pct,ready:missing.length===0};
+}
+function filterR(r){
+  if(S.diet.includes('Vegetarian')&&!r.dietTags.includes('Vegetarian')&&!r.dietTags.includes('Vegan'))return'diet';
+  if(S.diet.includes('Vegan')&&!r.dietTags.includes('Vegan'))return'diet';
+  for(const a of S.allergies){if(a==='None')continue;if(r.allergens.map(x=>x.toLowerCase()).includes(a.toLowerCase()))return'allergy';}
+  return null;
+}
+function whyText(r,sc){
+  const p=[];
+  if(sc.usesExp.length)p.push(`<span style="color:var(--orange);font-weight:600;">🚨 Uses ${sc.usesExp.join(', ')} — expiring soon</span>`);
+  if(sc.matched.length)p.push(`<span style="color:var(--green);font-weight:600;">✓ You have: ${sc.matched.slice(0,3).join(', ')}</span>`);
+  if(sc.missing.length)p.push(`⚠ Missing: <strong>${sc.missing.slice(0,2).join(', ')}</strong>`);
+  if(r.diff==='Easy')p.push(`👨‍🍳 ${S.skill==='beginner'?'Beginner-friendly':'Easy to make'}`);
+  return p.join(' &nbsp;·&nbsp; ');
+}
+
+// INGREDIENTS
+function renderIngSections(f=''){
+  const c=document.getElementById('ing-sections');c.innerHTML='';
+  Object.entries(ING_DB).forEach(([cat,items])=>{
+    const fi=f?items.filter(i=>i.toLowerCase().includes(f.toLowerCase())):items;
+    if(!fi.length)return;
+    const s=document.createElement('div');s.style.marginBottom='16px';
+    s.innerHTML=`<div class="section-label">${cat}</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${fi.map(i=>`<div class="chip${S.selIng.some(x=>x.name===i)?' selected':''}" onclick="toggleIng('${i}',this)">${i}</div>`).join('')}</div>`;
+    c.appendChild(s);
+  });
+}
+function toggleIng(name,el){
+  const idx=S.selIng.findIndex(i=>i.name===name);
+  if(idx>-1){S.selIng.splice(idx,1);el.classList.remove('selected');}
+  else{S.selIng.push({name,qty:'',exp:''});el.classList.add('selected');}
+  updateIngUI();renderSelPanel();
+}
+function updateIngUI(){
+  const n=S.selIng.length;
+  document.getElementById('sel-count').textContent=n;
+  document.getElementById('ing-count').textContent=n;
+  document.getElementById('ing-btn').disabled=n===0;
+  document.getElementById('selected-ing-area').style.display=n>0?'block':'none';
+}
+function renderSelPanel(){
+  const list=document.getElementById('selected-ing-list');list.innerHTML='';
+  S.selIng.forEach((ing,i)=>{
+    const r=document.createElement('div');r.className='ing-selected-row';
+    r.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;"><div class="ing-chip-active">${ing.name}<button onclick="removeIng(${i})">×</button></div></div><div class="ing-detail-row"><input placeholder="⚖️ Qty" value="${ing.qty}" onchange="S.selIng[${i}].qty=this.value"/><input placeholder="📅 Expires (days)" value="${ing.exp}" onchange="S.selIng[${i}].exp=this.value"/></div>`;
+    list.appendChild(r);
+  });
+}
+function removeIng(i){S.selIng.splice(i,1);renderIngSections(document.getElementById('ing-search').value);renderSelPanel();updateIngUI();}
+
+// CONFIRM
+function renderConfirm(){
+  const n=S.selIng.length;
+  document.getElementById('confirm-sub').textContent=n+' ingredient'+(n!==1?'s':'')+' selected';
+  const grps={};
+  S.selIng.forEach(ing=>{const cat=Object.entries(ING_DB).find(([,v])=>v.includes(ing.name))?.[0]||'Other';(grps[cat]=grps[cat]||[]).push(ing);});
+  document.getElementById('confirm-ing-list').innerHTML=Object.entries(grps).map(([cat,items])=>`<div style="font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:.8px;text-transform:uppercase;margin:10px 0 6px;">${cat}</div>${items.map(ing=>`<div style="border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-size:14px;font-weight:500;">${ing.name}<button onclick="removeConfirmIng('${ing.name}')" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-muted);">×</button></div>`).join('')}`).join('');
+  const visible=RECIPES.filter(r=>!filterR(r));
+  const ready=visible.filter(r=>scoreR(r).ready).length;
+  document.getElementById('confirm-match-body').innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span>🍴</span><p style="font-size:13px;">${n} ingredients match <strong>${visible.length}</strong> possible recipes</p></div><div style="display:flex;align-items:center;gap:8px;"><span style="color:var(--green);">✓</span><p style="font-size:13px;"><strong>${ready}</strong> ready to make right now</p></div>`;
+  const note=document.getElementById('confirm-filter-note');
+  if(S.diet.length&&S.diet[0]!=='None'){note.style.display='block';note.textContent=`🌿 Showing ${S.diet[0]} recipes only`;}else{note.style.display='none';}
+}
+function removeConfirmIng(name){S.selIng=S.selIng.filter(i=>i.name!==name);renderConfirm();}
+
+function openMoodPicker(){
+  // seed selIng from pantry if empty so mood → AI flow works
+  if(!S.selIng.length)S.selIng=S.pantry.map(p=>({name:p.name,qty:p.qty,exp:p.exp?p.exp+'d':''}));
+  goTo('s-mood');
+}
+
+// AI LOADING
+function startAI(){
+  // if still nothing, use pantry
+  if(!S.selIng.length)S.selIng=S.pantry.map(p=>({name:p.name,qty:p.qty,exp:p.exp?p.exp+'d':''}));
+  // track search in history
+  if(S.selIng.length){
+    const query=S.selIng.slice(0,3).map(i=>i.name).join(', ')+(S.selIng.length>3?'...':'');
+    const now=new Date();const timeStr=now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
+    S.searchHistory.unshift({query,time:'Today '+timeStr});
+    if(S.searchHistory.length>5)S.searchHistory.pop();
+  }
+  goTo('s-loading');
+  const msgs=['Checking your pantry...','Applying your preferences...','Scoring recipe matches...','Almost ready!'];
+  let pct=0,mi=0;
+  const fill=document.getElementById('prog-fill'),pctEl=document.getElementById('prog-pct'),msgEl=document.getElementById('load-msg');
+  const iv=setInterval(()=>{
+    pct=Math.min(pct+Math.random()*18,100);
+    fill.style.width=pct+'%';pctEl.textContent=Math.round(pct)+'%';
+    if(pct>mi*25+10&&mi<msgs.length)msgEl.textContent=msgs[mi++];
+    if(pct>=100){clearInterval(iv);setTimeout(()=>goTo('s-suggestions'),400);}
+  },130);
+}
+
+// SUGGESTIONS
+function renderSuggestions(){
+  const tagsRow=document.getElementById('ing-tags-row');
+  tagsRow.innerHTML=S.selIng.slice(0,5).map(i=>`<span class="tag green">${i.name}</span>`).join('');
+  const bannerWrap=document.getElementById('filter-banner-wrap');
+  if(S.diet.length&&S.diet[0]!=='None'){
+    bannerWrap.innerHTML=`<div class="filter-banner"><span>🌿 Showing ${S.diet[0]} recipes only</span><span style="cursor:pointer;font-size:11px;" onclick="S.diet=[];renderSuggestions()">✕ Clear</span></div>`;
+  }else bannerWrap.innerHTML='';
+  const sorted=[...RECIPES].map(r=>({r,sc:scoreR(r),filtered:filterR(r)})).filter(x=>!x.filtered).sort((a,b)=>(b.sc.usesExp.length-a.sc.usesExp.length)||(b.sc.pct-a.sc.pct));
+  const filteredOut=RECIPES.filter(r=>filterR(r));
+  document.getElementById('sugg-sub').textContent=`${sorted.length} match${sorted.length!==1?'es':''} found${filteredOut.length?' · '+filteredOut.length+' filtered':''}`;
+  const list=document.getElementById('suggestions-list');list.innerHTML='';
+  if(!sorted.length){
+    list.innerHTML=`<div style="text-align:center;padding:40px 20px;"><p style="font-size:32px;margin-bottom:10px;">🤷</p><p style="font-size:15px;font-weight:600;margin-bottom:6px;">No matches found</p><p style="font-size:13px;color:var(--text-muted);">Try adding more ingredients or clearing your dietary filter</p><button class="btn-primary" style="margin-top:16px;width:auto;padding:12px 24px;" onclick="goTo('s-add')">Add Ingredients</button></div>`;
+    return;
+  }
+  sorted.forEach(({r,sc})=>{
+    const el=document.createElement('div');el.className='recipe-card';
+    const isSaved=S.saved.find(x=>x.id===r.id);
+    el.innerHTML=`
+      <div class="recipe-card-row">
+        <div class="recipe-emoji">${r.emoji}</div>
+        <div class="recipe-info">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:4px;">
+            <div class="recipe-title">${r.name}</div>
+            <button onclick="event.stopPropagation();toggleSave(${r.id})" style="background:none;border:none;cursor:pointer;font-size:18px;flex-shrink:0;opacity:${isSaved?1:.5};" id="bm-${r.id}">🔖</button>
+          </div>
+          <div class="recipe-meta">⏱ ${r.time} &nbsp;👨‍🍳 ${r.diff}<span class="match-pill">${sc.pct}% match</span>${sc.ready?'&nbsp;<span class="ready-badge">✓ Ready</span>':''}</div>
+          <div class="recipe-tags">${r.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+        </div>
+      </div>
+      <div class="why-box">${whyText(r,sc)}</div>`;
+    el.addEventListener('click',()=>openRecipe(r));
+    list.appendChild(el);
+  });
+}
+function filterSugg(el,type){
+  document.querySelectorAll('#filter-row .filter-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');
+  const sorted=[...RECIPES].map(r=>({r,sc:scoreR(r)})).filter(x=>!filterR(x.r)).sort((a,b)=>(b.sc.usesExp.length-a.sc.usesExp.length)||(b.sc.pct-a.sc.pct));
+  document.querySelectorAll('#suggestions-list .recipe-card').forEach((card,i)=>{
+    if(!sorted[i])return;
+    const {r,sc}=sorted[i];
+    let show=true;
+    if(type==='quick')show=parseInt(r.time)<=20;
+    if(type==='veg')show=r.dietTags.includes('Vegetarian')||r.dietTags.includes('Vegan');
+    if(type==='protein')show=r.tags.includes('High Protein');
+    if(type==='ready')show=sc.ready;
+    card.style.display=show?'flex':'none';
+  });
+}
+function toggleSave(id){
+  const r=RECIPES.find(x=>x.id===id);if(!r)return;
+  const idx=S.saved.findIndex(x=>x.id===id);
+  if(idx>-1)S.saved.splice(idx,1);else S.saved.push(r);
+  const isSaved=!!S.saved.find(x=>x.id===id);
+  // update all bookmark icons for this recipe across all visible lists
+  document.querySelectorAll(`[id$="-bm-${id}"], #bm-${id}`).forEach(btn=>{btn.style.opacity=isSaved?1:.4;});
+  // update search results bookmark if present
+  const srchBtn=document.getElementById(`srch-bm-${id}`);if(srchBtn)srchBtn.style.opacity=isSaved?1:.4;
+  // update suggestions list
+  const suggBtn=document.getElementById(`bm-${id}`);if(suggBtn)suggBtn.style.opacity=isSaved?1:.4;
+  // sync grocery list
+  renderGrocery();
+}
+
+// RECIPE DETAIL
+function openRecipe(r){
+  S.curRecipe=r;
+  const sc=scoreR(r);
+  S.hist.push(S.cur);
+  document.getElementById(S.cur).classList.remove('active');
+  document.getElementById('s-recipe').classList.add('active');
+  S.cur='s-recipe';
+  document.getElementById('recipe-hero').textContent=r.emoji;
+  const isSaved=S.saved.find(x=>x.id===r.id);
+  const bmBtn=document.getElementById('recipe-bm-btn');
+  bmBtn.style.background=isSaved?'var(--green)':'white';
+  bmBtn.style.color=isSaved?'white':'var(--text)';
+  const lbl=document.getElementById('recipe-bm-label');if(lbl)lbl.textContent=isSaved?'Saved':'Save';
+  document.getElementById('recipe-content').innerHTML=`
+    <div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:24px;font-weight:800;margin-bottom:8px;">${r.name}</h2>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+        <span style="font-size:13px;color:var(--text-muted);">⏱ ${r.time}</span>
+        <span style="font-size:13px;color:var(--text-muted);">👨‍🍳 ${r.diff}</span>
+        <span class="match-pill">${sc.pct}% pantry match</span>
+        ${sc.ready?'<span class="ready-badge">✓ Ready Now</span>':''}
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">${r.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+    </div>
+    <div class="why-box">${whyText(r,sc)}</div>
+    <div class="nutr-grid">
+      <div class="nutr-cell"><div class="nutr-val">${r.nutrition.cal}</div><div class="nutr-lbl">Calories</div></div>
+      <div class="nutr-cell"><div class="nutr-val">${r.nutrition.protein}g</div><div class="nutr-lbl">Protein</div></div>
+      <div class="nutr-cell"><div class="nutr-val">${r.nutrition.carbs}g</div><div class="nutr-lbl">Carbs</div></div>
+      <div class="nutr-cell"><div class="nutr-val">${r.nutrition.fat}g</div><div class="nutr-lbl">Fat</div></div>
+    </div>
+    <div class="card">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;">🧺 Ingredients</h3>
+      ${r.ingredients.map(i=>{const have=[...S.selIng,...S.pantry].some(p=>p.name.toLowerCase()===i.toLowerCase());return`<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;display:flex;align-items:center;gap:8px;"><span style="color:${have?'var(--green)':'var(--orange)'};">${have?'✓':'⚠'}</span>${i}${!have?'<span style="font-size:11px;color:var(--text-muted);margin-left:auto;">missing</span>':''}</div>`}).join('')}
+      ${sc.missing.length?`<div style="margin-top:10px;padding:10px;background:var(--orange-bg);border-radius:10px;font-size:13px;color:var(--orange);font-weight:500;">Missing: ${sc.missing.join(', ')}</div>`:''}
+    </div>
+    ${r.subs.length?`<div class="card"><h3 style="font-size:15px;font-weight:700;margin-bottom:10px;">💡 Ingredient Swaps</h3>${r.subs.map(s=>`<div style="font-size:13px;color:var(--text-mid);padding:7px 0;border-bottom:1px solid var(--border);">→ ${s}</div>`).join('')}</div>`:''}
+    <div class="card">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:4px;">📋 Step-by-Step Instructions</h3>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">For ${S.skill} level cook</p>
+      ${r.steps.map((s,i)=>`<div class="step-row"><div class="step-num">${i+1}</div><div style="font-size:14px;line-height:1.6;color:var(--text-mid);">${s}</div></div>`).join('')}
+    </div>`;
+}
+function toggleSaveRecipe(){
+  const r=S.curRecipe;if(!r)return;
+  const idx=S.saved.findIndex(x=>x.id===r.id);
+  if(idx>-1){
+    S.saved.splice(idx,1);
+    document.getElementById('recipe-bm-btn').style.background='white';
+    document.getElementById('recipe-bm-btn').style.color='var(--text)';
+    const lbl=document.getElementById('recipe-bm-label');if(lbl)lbl.textContent='Save';
+  } else {
+    S.saved.push(r);
+    document.getElementById('recipe-bm-btn').style.background='var(--green)';
+    document.getElementById('recipe-bm-btn').style.color='white';
+    const lbl=document.getElementById('recipe-bm-label');if(lbl)lbl.textContent='Saved';
+  }
+  renderGrocery();
+}
+
+// SAVED
+function renderSaved(){
+  const list=document.getElementById('saved-list');
+  document.getElementById('saved-sub').textContent=S.saved.length+' recipe'+(S.saved.length!==1?'s':'');
+  if(!S.saved.length){list.innerHTML=`<div style="text-align:center;padding:40px 20px;"><p style="font-size:32px;margin-bottom:10px;">🔖</p><p style="font-size:15px;font-weight:600;margin-bottom:6px;">No saved recipes yet</p><p style="font-size:13px;color:var(--text-muted);">Tap 🔖 on any recipe to save it</p><button class="btn-primary" style="margin-top:16px;width:auto;padding:12px 24px;" onclick="goTo('s-add')">Browse Recipes</button></div>`;return;}
+  list.innerHTML='';
+  S.saved.forEach(r=>{
+    const el=document.createElement('div');el.className='saved-card';
+    el.innerHTML=`<div class="saved-card-top" onclick="openRecipe(RECIPES.find(x=>x.id===${r.id})||r)"><div style="width:72px;height:72px;border-radius:10px;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;">${r.emoji}</div><div class="recipe-info"><div class="recipe-title">${r.name}</div><div class="recipe-meta">⏱ ${r.time} · 👨‍🍳 ${r.diff}</div><div class="recipe-tags">${r.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div></div></div><div class="saved-card-bottom"><button onclick="openRecipe(RECIPES.find(x=>x.id===${r.id})||r)">🍳 Start Cooking</button><div class="del-btn" onclick="S.saved=S.saved.filter(x=>x.id!==${r.id});renderSaved()">🗑️</div></div>`;
+    list.appendChild(el);
+  });
+}
+
+// SCAN
+function triggerScan(){document.getElementById('scan-file-input').click();}
+function triggerDemoScan(){
+  // show scanning animation then go to review
+  document.getElementById('scan-idle-ui').style.display='none';
+  document.getElementById('scan-loading-ui').style.display='flex';
+  setTimeout(()=>{
+    document.getElementById('scan-idle-ui').style.display='flex';
+    document.getElementById('scan-loading-ui').style.display='none';
+    S.removedDet=new Set();
+    goTo('s-scan-review');
+  },1800);
+}
+function handleScanFile(e){if(!e.target.files[0])return;S.removedDet=new Set();goTo('s-scan-review');e.target.value='';}
+function renderScanReview(){
+  const active=S.detected.filter((_,i)=>!S.removedDet.has(i));
+  document.getElementById('det-count').textContent=active.length;
+  const list=document.getElementById('detected-list');list.innerHTML='';
+  S.detected.forEach((d,i)=>{
+    if(S.removedDet.has(i))return;
+    const el=document.createElement('div');el.className='det-item';
+    el.innerHTML=`<div style="flex:1;"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;"><span style="font-size:15px;font-weight:600;">${d.n}</span><span style="font-size:12px;color:var(--text-muted);font-weight:600;">${d.c}% confidence</span></div><div class="conf-bar"><div class="conf-fill" style="width:${d.c}%;background:${d.c>=80?'var(--green)':d.c>=65?'var(--orange)':'var(--red)'};"></div></div></div><button onclick="S.removedDet.add(${i});renderScanReview()" style="background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-muted);margin-left:10px;flex-shrink:0;">Remove</button>`;
+    list.appendChild(el);
+  });
+}
+function confirmScan(){
+  S.selIng=S.detected.filter((_,i)=>!S.removedDet.has(i)).map(d=>({name:d.n,qty:'',exp:''}));
+  goTo('s-confirm');
+}
+
+// PANTRY
+function renderPantry(){
+  const items=S.pantry.filter(i=>(S.pantryCat==='all'||i.cat===S.pantryCat)&&i.name.toLowerCase().includes(S.pantryFilter.toLowerCase()));
+  const list=document.getElementById('pantry-list');
+  if(!items.length){list.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-muted);">No items found</div>';return;}
+  list.innerHTML='';
+  items.forEach(item=>{
+    const el=document.createElement('div');el.className='pantry-item';
+    const idx=S.pantry.indexOf(item);
+    const ec=item.exp?(item.exp<=1?'var(--red)':item.exp<=3?'var(--orange)':'var(--text-muted)'):'';
+    el.innerHTML=`<div><div style="font-size:15px;font-weight:600;">${item.name}</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${item.qty} · ${item.cat}${item.exp?` · <span style="color:${ec};font-weight:600;">${item.exp<=1?'Expires tomorrow':'Expires in '+item.exp+'d'}</span>`:''}</div></div><button onclick="S.pantry.splice(${idx},1);renderPantry()" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-muted);">🗑️</button>`;
+    list.appendChild(el);
+  });
+}
+function filterPantry(v){S.pantryFilter=v;renderPantry();}
+function filterCat(el,cat){document.querySelectorAll('#s-pantry .filter-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');S.pantryCat=cat;renderPantry();}
+function openAddPantry(){['m-name','m-qty','m-exp'].forEach(id=>document.getElementById(id).value='');document.getElementById('modal-overlay').classList.add('active');}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('active');}
+function addPantryItem(){
+  const name=document.getElementById('m-name').value.trim();if(!name)return;
+  S.pantry.unshift({name,qty:document.getElementById('m-qty').value.trim()||'1 unit',cat:document.getElementById('m-cat').value||'Other',exp:parseInt(document.getElementById('m-exp').value)||null});
+  closeModal();renderPantry();
+}
+
+// USE IT UP
+function renderUIU(){
+  const expiring=S.pantry.filter(p=>p.exp&&p.exp<=3);
+  const expNames=expiring.map(p=>p.name.toLowerCase());
+  const itemsEl=document.getElementById('uiu-items');
+  itemsEl.innerHTML='<p style="font-size:13px;color:var(--text-muted);font-weight:600;">Expiring Soon — Use These First</p>';
+  expiring.sort((a,b)=>a.exp-b.exp).forEach(item=>{
+    const el=document.createElement('div');el.className='uiu-item';el.style.justifyContent='space-between';
+    el.innerHTML=`<div style="display:flex;align-items:center;gap:10px;"><div class="uiu-dot"></div><div><div style="font-size:15px;font-weight:600;">${item.name}</div><div style="font-size:12px;color:var(--text-muted);">${item.qty}</div></div></div><span class="tag ${item.exp<=1?'red':'orange'}">${item.exp<=1?'Use today':item.exp+'d'}</span>`;
+    itemsEl.appendChild(el);
+  });
+  // update button count dynamically
+  const findBtn=document.getElementById('uiu-find-btn');
+  if(findBtn)findBtn.textContent=`🛟 Find Recipes With These ${expiring.length}`;
+  const rc=document.getElementById('uiu-recipes');rc.innerHTML='';
+  RECIPES.filter(r=>r.ingredients.some(i=>expNames.includes(i.toLowerCase()))).slice(0,3).forEach(r=>{
+    const cnt=r.ingredients.filter(i=>expNames.includes(i.toLowerCase())).length;
+    const el=document.createElement('div');el.className='card';el.style.cursor='pointer';
+    el.innerHTML=`<div style="display:flex;gap:12px;align-items:center;" onclick="openRecipe(RECIPES.find(x=>x.id===${r.id}))"><div style="width:60px;height:60px;border-radius:10px;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">${r.emoji}</div><div style="flex:1;"><div style="font-size:14px;font-weight:600;">${r.name}</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">⏱ ${r.time} · Uses <strong>${cnt}</strong> expiring item${cnt>1?'s':''}</div><div style="display:flex;gap:5px;margin-top:4px;">${r.tags.slice(0,2).map(t=>`<span class="tag">${t}</span>`).join('')}</div></div><span style="color:var(--text-muted);">›</span></div>`;
+    rc.appendChild(el);
+  });
+}
+function uiuFindRecipes(){S.selIng=S.pantry.filter(p=>p.exp&&p.exp<=3).map(p=>({name:p.name,qty:p.qty,exp:p.exp+'d'}));startAI();}
+
+// GROCERY
+function renderGrocery(){
+  // rebuild grocery from saved recipes' missing items
+  S.saved.forEach(r=>r.missing&&r.missing.forEach(m=>{if(!S.grocery.find(g=>g.name.toLowerCase()===m.toLowerCase()))S.grocery.push({name:m,recipe:r.name,chk:false});}));
+  const list=document.getElementById('grocery-list');
+  if(!list)return;
+  if(!S.grocery.length){list.innerHTML=`<div style="text-align:center;padding:40px 20px;"><p style="font-size:32px;margin-bottom:10px;">🛒</p><p style="font-size:15px;font-weight:600;margin-bottom:6px;">Grocery list is empty</p><p style="font-size:13px;color:var(--text-muted);">Save a recipe and its missing ingredients appear here automatically</p></div>`;return;}
+  list.innerHTML='';
+  const unc=S.grocery.filter(g=>!g.chk),chk=S.grocery.filter(g=>g.chk);
+  if(unc.length){const l=document.createElement('div');l.className='section-label';l.textContent=`TO BUY (${unc.length})`;list.appendChild(l);unc.forEach(g=>appendGrocItem(g,list));}
+  if(chk.length){const l=document.createElement('div');l.className='section-label';l.style.marginTop='12px';l.textContent=`GOT IT (${chk.length})`;list.appendChild(l);chk.forEach(g=>appendGrocItem(g,list));}
+}
+function openAddPantryFromGrocery(){
+  ['m-name','m-qty','m-exp'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('modal-overlay').classList.add('active');
+}
+function appendGrocItem(g,container){
+  const el=document.createElement('div');el.className='grocery-item';
+  el.innerHTML=`<div class="gchk${g.chk?' chk':''}" onclick="toggleGroc('${g.name}')"></div><div style="flex:1;"><div style="font-size:15px;font-weight:600;${g.chk?'text-decoration:line-through;color:var(--text-muted);':''}">${g.name}</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Needed for: ${g.recipe}</div></div><button onclick="S.grocery=S.grocery.filter(x=>x.name!=='${g.name}');renderGrocery()" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-muted);">×</button>`;
+  container.appendChild(el);
+}
+function toggleGroc(name){const g=S.grocery.find(x=>x.name===name);if(g)g.chk=!g.chk;renderGrocery();}
+function clearGrocery(){S.grocery=[];renderGrocery();}
+
+// SEARCH
+function doSearch(v){
+  const sc=document.getElementById('search-content'),sr=document.getElementById('search-results');
+  if(!v.trim()){sc.style.display='flex';sr.style.display='none';return;}
+  sc.style.display='none';sr.style.display='flex';
+  const m=RECIPES.filter(r=>r.name.toLowerCase().includes(v.toLowerCase())||r.tags.some(t=>t.toLowerCase().includes(v.toLowerCase()))||r.cuisine.toLowerCase().includes(v.toLowerCase()));
+  sr.innerHTML=m.length?m.map(r=>{const isSaved=S.saved.find(x=>x.id===r.id);return`<div class="recipe-card" onclick="openRecipe(RECIPES.find(x=>x.id===${r.id}))"><div class="recipe-card-row"><div class="recipe-emoji">${r.emoji}</div><div class="recipe-info"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:4px;"><div class="recipe-title">${r.name}</div><button onclick="event.stopPropagation();toggleSave(${r.id})" style="background:none;border:none;cursor:pointer;font-size:18px;flex-shrink:0;opacity:${isSaved?1:.4};" id="srch-bm-${r.id}">🔖</button></div><div class="recipe-meta">⏱ ${r.time} · 👨‍🍳 ${r.diff}</div><div class="recipe-tags">${r.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div></div></div></div>`}).join(''):`<div style="text-align:center;padding:30px;color:var(--text-muted);">No results for "${v}"</div>`;
+}
+function searchChip(el){document.getElementById('search-input').value=el.textContent.trim();doSearch(el.textContent.trim());}
+
+// COOKING MODE
+function startCooking(){
+  const r=S.curRecipe;if(!r)return;
+  // track as cooked
+  if(!S.cooked.find(x=>x.id===r.id))S.cooked.push(r);
+  S.currentCookStep=0;
+  // reset completion card
+  document.getElementById('cook-complete-card').style.display='none';
+  document.getElementById('cook-step-card').style.display='block';
+  document.getElementById('cook-ing-check').style.display='none';
+  document.getElementById('cook-tip').style.display='none';
+  document.getElementById('cook-nav-btns').style.display='flex';
+  renderCookStep();
+  goTo('s-cooking');
+}
+function renderCookStep(){
+  const r=S.curRecipe;if(!r||!r.steps)return;
+  const total=r.steps.length;
+  const i=S.currentCookStep;
+  const step=r.steps[i];
+  document.getElementById('cook-recipe-name').textContent=r.emoji+' '+r.name;
+  document.getElementById('cook-step-label').textContent=`Step ${i+1} of ${total}`;
+  document.getElementById('cook-step-num').textContent=i+1;
+  document.getElementById('cook-progress-bar').style.width=((i+1)/total*100)+'%';
+  // Parse step title (first sentence or up to colon) and body
+  const colonIdx=step.indexOf('.');
+  document.getElementById('cook-step-title').textContent=colonIdx>0?step.slice(0,colonIdx):step.slice(0,40);
+  document.getElementById('cook-step-body').textContent=step;
+  // show ingredients on first step
+  const ingCheck=document.getElementById('cook-ing-check');
+  const ingList=document.getElementById('cook-ing-list');
+  if(i===0){
+    ingCheck.style.display='block';
+    ingList.innerHTML=r.ingredients.map(ing=>{
+      const have=[...S.selIng,...S.pantry].some(p=>p.name.toLowerCase()===ing.toLowerCase());
+      return`<div style="display:flex;align-items:center;gap:8px;font-size:14px;padding:4px 0;"><span style="color:${have?'var(--green)':'var(--orange)'};">${have?'✓':'⚠'}</span>${ing}</div>`;
+    }).join('');
+  } else ingCheck.style.display='none';
+  // tips for certain steps
+  const tips={0:'💡 Read through all the steps before you start cooking.',1:'🔥 Make sure your pan is fully heated before adding food.',2:'🧂 Season as you go — taste and adjust throughout.'};
+  const tipEl=document.getElementById('cook-tip');
+  if(tips[i]){tipEl.style.display='block';tipEl.textContent=tips[i];}else tipEl.style.display='none';
+  // button states
+  document.getElementById('cook-prev-btn').style.opacity=i===0?.3:1;
+  document.getElementById('cook-prev-btn').disabled=i===0;
+  const nextBtn=document.getElementById('cook-next-btn');
+  if(i===total-1){nextBtn.textContent='🎉 Finish Cooking';nextBtn.onclick=showCookingComplete;}
+  else{nextBtn.textContent='Next Step →';nextBtn.onclick=()=>cookStep(1);}
+}
+function cookStep(dir){
+  const r=S.curRecipe;if(!r)return;
+  S.currentCookStep=Math.max(0,Math.min(r.steps.length-1,S.currentCookStep+dir));
+  renderCookStep();
+}
+function showCookingComplete(){
+  const r=S.curRecipe;
+  // show completion card, hide step UI
+  document.getElementById('cook-step-card').style.display='none';
+  document.getElementById('cook-ing-check').style.display='none';
+  document.getElementById('cook-tip').style.display='none';
+  document.getElementById('cook-nav-btns').style.display='none';
+  document.getElementById('cook-complete-card').style.display='block';
+  document.getElementById('cook-complete-emoji').textContent=r?r.emoji:'🍽️';
+  document.getElementById('cook-complete-name').textContent=r?r.name:'';
+  document.getElementById('cook-step-label').textContent='Done!';
+  document.getElementById('cook-progress-bar').style.width='100%';
+  // scroll to top of cooking scroll area
+  const sa=document.getElementById('cook-scroll-area');if(sa)sa.scrollTop=0;
+}
+function exitCookingToRecipe(){
+  // pop history cleanly back to recipe screen
+  goBack();
+}
+function exitCooking(){goBack();}
+
+// ASK AI (simulated — no live API call)
+async function sendPrompt(t){document.getElementById('chat-prompts').style.display='none';document.getElementById('chat-input').value=t;await sendChat();}
+function getSimulatedReply(msg){
+  const m=msg.toLowerCase();
+  const pantryNames=S.pantry.map(p=>p.name.toLowerCase());
+  const expiring=S.pantry.filter(p=>p.exp&&p.exp<=3).map(p=>p.name);
+  const isVeg=S.diet.includes('Vegetarian')||S.diet.includes('Vegan');
+  if(m.includes('rice')||m.includes('leftover rice')){
+    return`With rice in your pantry, a quick Vegetable Fried Rice is your best bet — it's ready in 18 min and uses your spinach and garlic too. You'll just need soy sauce. Alternatively, rice + chicken + garlic makes a solid Garlic Butter Chicken & Rice with no missing ingredients at all.`;
+  }
+  if(m.includes('vegetarian')||m.includes('vegan')){
+    return`For vegetarian options, you've got two great choices right now: Spinach & Mushroom Omelette (12 min, no missing ingredients — just eggs, spinach, and mushrooms from your pantry) or Creamy Mushroom Pasta (20 min, uses your heavy cream which expires tomorrow). I'd go with the pasta to save that cream.`;
+  }
+  if(m.includes('quick')||m.includes('fast')||m.includes('15 min')){
+    return`Fastest option for you: Spinach & Mushroom Omelette — 12 minutes, zero missing ingredients, and uses stuff in your pantry right now. If you want something more filling, Chicken Stir-Fry is 15 min but needs soy sauce.`;
+  }
+  if(m.includes('expir')||m.includes('cream')||m.includes('rescue')){
+    return`Your Heavy Cream expires tomorrow — top priority. Both the Creamy Chicken Broccoli Pasta and Creamy Mushroom Pasta use it. The mushroom pasta needs nothing extra from your pantry and is ready in 20 min. I'd make that tonight.`;
+  }
+  if(m.includes('dinner')||m.includes('tonight')||m.includes('two')){
+    return`For dinner tonight, Garlic Butter Chicken & Rice is your best full match — uses chicken, rice, garlic, and olive oil, all in your pantry. 25 minutes, beginner-friendly, and no missing ingredients. Top it with a handful of spinach and it's a complete meal.`;
+  }
+  if(m.includes('healthy')||m.includes('protein')||m.includes('filling')){
+    return`Most protein-dense option with what you have: Garlic Butter Chicken & Rice (42g protein per serving) or the Spinach & Mushroom Omelette (22g, ready in 12 min). Both use pantry ingredients you already have. The omelette is lower calorie; the chicken dish is more filling.`;
+  }
+  if(m.includes('swap')||m.includes('missing')||m.includes('substitute')){
+    const r=S.curRecipe;
+    if(r&&r.subs&&r.subs.length){return`For ${r.name}: ${r.subs.slice(0,2).join('. ')}`;}
+    return`Most common swaps in your recipes: Broccoli → use your Spinach (already in pantry). Soy Sauce → a pinch of salt + a little olive oil for umami. Bell Pepper → whatever veg you have on hand.`;
+  }
+  // default contextual response
+  const expStr=expiring.length?`Your ${expiring[0]} ${expiring.length>1?'and '+expiring[1]+' are':'is'} expiring soon — I'd use ${expiring.length>1?'them':'it'} first. `:'';
+  const suggestions=isVeg?'Spinach & Mushroom Omelette or Creamy Mushroom Pasta':'Garlic Butter Chicken & Rice or Spinach & Mushroom Omelette';
+  return`${expStr}Based on your pantry right now, ${suggestions} are your best ready-to-cook options. Want me to walk you through either one?`;
+}
+async function sendChat(){
+  const inp=document.getElementById('chat-input');const t=inp.value.trim();if(!t)return;inp.value='';
+  S.chat.push({role:'user',content:t});renderChat();
+  const typing=document.createElement('div');typing.className='msg-ai';typing.id='typing';typing.innerHTML='<span style="opacity:.5">✨ thinking...</span>';
+  document.getElementById('chat-messages').appendChild(typing);scrollChat();
+  // simulate network delay then respond
+  await new Promise(r=>setTimeout(r,700+Math.random()*600));
+  const reply=getSimulatedReply(t);
+  S.chat.push({role:'assistant',content:reply});document.getElementById('typing')?.remove();renderChat();
+}
+function renderChat(){
+  const c=document.getElementById('chat-messages');c.innerHTML='';
+  S.chat.forEach(m=>{const el=document.createElement('div');el.className=m.role==='user'?'msg-user':'msg-ai';el.textContent=m.content;c.appendChild(el);});scrollChat();
+}
+function scrollChat(){const s=document.getElementById('chat-scroll');setTimeout(()=>{s.scrollTop=s.scrollHeight;},50);}
+
+// MOOD
+function selectMood(m){
+  ['high','medium','low'].forEach(k=>{const el=document.getElementById('mood-'+k);if(el){el.style.borderColor=k===m?'var(--green)':'var(--border)';el.style.background=k===m?'var(--green-light)':'var(--white)';}});
+}
+function selTime(t){['quick','medium','have'].forEach(k=>document.getElementById('time-'+k).classList.remove('selected'));document.getElementById('time-'+t).classList.add('selected');}
+
+// PROFILE
+function switchTab(tab){
+  S.profileTab=tab;['prefs','history','stats'].forEach(t=>document.getElementById('ptab-'+t).classList.remove('active'));
+  document.getElementById('ptab-'+tab).classList.add('active');renderProfile();
+}
+function renderProfile(){
+  const c=document.getElementById('profile-content');
+  if(S.profileTab==='prefs'){
+    c.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;"><span style="font-size:15px;font-weight:700;">Your Preferences</span><button style="background:var(--bg);border:1.5px solid var(--border);border-radius:20px;padding:6px 16px;font-size:13px;cursor:pointer;" onclick="goTo('s-ob1')">Edit</button></div>
+    <div class="pref-item"><div class="pref-item-header"><div class="pref-icon">🌿</div><div style="font-size:14px;font-weight:600;">Dietary Preferences</div></div><div style="font-size:13px;color:var(--text-muted);margin-left:42px;">${S.diet.length&&S.diet[0]!=='None'?S.diet.join(', '):'No restrictions'}</div></div>
+    <div class="pref-item"><div class="pref-item-header"><div class="pref-icon">⚠️</div><div style="font-size:14px;font-weight:600;">Allergies</div></div><div style="font-size:13px;color:var(--text-muted);margin-left:42px;">${S.allergies.length&&!S.allergies.includes('None')?S.allergies.join(', '):'None set'}</div></div>
+    <div class="pref-item"><div class="pref-item-header"><div class="pref-icon">👨‍🍳</div><div style="font-size:14px;font-weight:600;">Skill Level</div></div><div style="font-size:13px;color:var(--text-muted);margin-left:42px;text-transform:capitalize;">${S.skill}</div></div>
+    <div class="pref-item"><div class="pref-item-header"><div class="pref-icon">🔧</div><div style="font-size:14px;font-weight:600;">Equipment</div></div><div style="font-size:13px;color:var(--text-muted);margin-left:42px;">${S.equip.join(', ')||'Not set'}</div></div>`;
+  }else if(S.profileTab==='history'){
+    const recentSearches=S.searchHistory||[];
+    const searchHtml=recentSearches.length
+      ? recentSearches.slice(0,5).map(s=>`<div class="history-item"><span>${s.query}</span><span style="font-size:11px;color:var(--text-muted);">${s.time}</span></div>`).join('')
+      : '<p style="font-size:13px;color:var(--text-muted);">No searches yet this session</p>';
+    c.innerHTML=`<p style="font-size:15px;font-weight:700;margin-bottom:4px;">Recent Activity</p>
+    <div class="card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><span>🕒</span><span style="font-size:14px;font-weight:600;">Recent Searches</span></div>
+    <div style="display:flex;flex-direction:column;gap:6px;">${searchHtml}</div></div>
+    <div class="card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span>🔖</span><span style="font-size:14px;font-weight:600;">Saved Recipes (${S.saved.length})</span></div>
+    ${S.saved.length?S.saved.map(r=>`<div class="history-item" style="cursor:pointer;" onclick="openRecipe(RECIPES.find(x=>x.id===${r.id})||r)"><span>${r.emoji} ${r.name}</span><span style="font-size:11px;color:var(--text-muted);">${r.time}</span></div>`).join(''):'<p style="font-size:13px;color:var(--text-muted);">No saved recipes yet</p>'}</div>`;
+  }else{
+    // Real session-tracked stats
+    const recipesCooked = S.cooked.length;
+    const savedCount = S.saved.length;
+    const groceryChecked = S.grocery.filter(g=>g.chk).length;
+    const expiringUsed = S.cooked.filter(r => r.ingredients.some(i => S.pantry.some(p=>p.exp&&p.exp<=3&&p.name.toLowerCase()===i.toLowerCase()))).length;
+    const hasAny = recipesCooked > 0 || savedCount > 0 || groceryChecked > 0;
+    c.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:15px;font-weight:700;">This Session</span>
+        <span style="font-size:11px;color:var(--text-muted);background:var(--border);padding:3px 8px;border-radius:8px;">Live data from your session</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="stat-card"><div class="stat-num" style="${recipesCooked===0?'color:var(--text-muted);font-size:22px;':''};">${recipesCooked===0?'—':recipesCooked}</div><div class="stat-label">Recipes Cooked</div></div>
+        <div class="stat-card"><div class="stat-num" style="${savedCount===0?'color:var(--text-muted);font-size:22px;':''};">${savedCount===0?'—':savedCount}</div><div class="stat-label">Saved</div></div>
+        <div class="stat-card"><div class="stat-num" style="${expiringUsed===0?'color:var(--text-muted);font-size:22px;':''};">${expiringUsed===0?'—':expiringUsed}</div><div class="stat-label">Expiring Items Used</div></div>
+        <div class="stat-card"><div class="stat-num" style="${groceryChecked===0?'color:var(--text-muted);font-size:22px;':''};">${groceryChecked===0?'—':groceryChecked}</div><div class="stat-label">Grocery Items Got</div></div>
+      </div>
+      ${hasAny
+        ? `<div class="card" style="background:var(--green-light);border:none;text-align:center;"><div style="font-size:28px;margin-bottom:6px;">🌍</div><div style="font-size:14px;font-weight:600;color:var(--green);">Great session! Keep going.</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Cook more recipes to build your impact score</div></div>`
+        : `<div class="card" style="border:1.5px dashed var(--border);box-shadow:none;text-align:center;padding:24px;"><div style="font-size:24px;margin-bottom:8px;">📊</div><div style="font-size:14px;font-weight:600;margin-bottom:4px;">No activity yet this session</div><div style="font-size:13px;color:var(--text-muted);">Cook a recipe or save one to start tracking</div><button class="btn-primary" style="margin-top:16px;" onclick="goTo('s-add')">Find a Recipe</button></div>`
+      }`;
+  }
+}
+
+// INIT
+renderIngSections();renderProfile();renderPantry();renderUIU();renderGrocery();renderSaved();
+</script>
+</div></body></html>
